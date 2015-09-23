@@ -1,0 +1,29 @@
+#!/hive/groups/recon/local/bin/python
+
+import argparse
+from collections import Counter
+import ragout_synteny_blocks
+
+
+def get_seq_ids_for_specie(chroms, specie):
+    specie_chroms = filter(lambda x: x.description.split('.')[0] == specie, chroms)
+    specie_ids = [x.seq_id for x in specie_chroms]
+    return set(specie_ids)
+
+def count_breakpoints(chroms, blocks,specie):
+    entries_ids_in_blocks = [e.seq_id for b in blocks for e in b.entries] 
+    specie_ids = get_seq_ids_for_specie(chroms,specie)
+    cnt = Counter(entries_ids_in_blocks)
+    not_unique_chrs_for_specie = filter(lambda x: x[0] in specie_ids and x[1] > 1, cnt.items()) 
+    #subtract 1 from each element because |breakpoints| == |blocks in specie| - 1
+    return sum([x[1] for x in not_unique_chrs_for_specie]) - len(not_unique_chrs_for_specie)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('file', help='blocks_coords.txt')
+    parser.add_argument('specie')
+    args = parser.parse_args()
+    chroms = ragout_synteny_blocks.parse_chromosomes(args.file)
+    blocks = ragout_synteny_blocks.parse_blocks(args.file)
+    print count_breakpoints(chroms, blocks, args.specie)

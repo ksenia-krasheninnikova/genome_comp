@@ -1,0 +1,49 @@
+#!/hive/groups/recon/local/bin/python
+
+import bisect
+import sys
+import argparse
+import numpy
+from collections import Counter
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.pyplot as plt
+import os
+
+def draw_distr(path, size2quantity_1, size2quantity_2, size2quantity_3):
+    pp=PdfPages(os.path.join(path,'plot.pdf'))
+    plt.xlabel('Exon Length, bp')
+    plt.ylabel('Quantity')
+    plt.plot(size2quantity_1.keys(),size2quantity_1.values(),'ro', label='domestic cat', color='crimson', markersize=3)
+    plt.plot(size2quantity_2.keys(),size2quantity_2.values(),'ro', label='human', color='darkkhaki', markersize=3)
+    plt.plot(size2quantity_3.keys(),size2quantity_3.values(),'ro', label='mouse', color='plum', markersize=3)
+    plt.legend()
+    #plt.legend(loc=1, borderaxespad=0., fontsize=5)
+    plt.savefig(pp, format='pdf')
+    pp.close()
+
+def get_exons(path):
+    exons = []
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if line[0] == '#':
+                continue
+            line=line.split()
+            if line[2] == 'exon':
+                length = int(line[4]) - int(line[3])
+                if length < 1000:
+                    exons.append(length)
+    return Counter(exons)
+    
+if __name__ == '__main__' :
+    parser = argparse.ArgumentParser()
+    parser.add_argument('path_to_gtf_1')
+    parser.add_argument('path_to_gtf_2')
+    parser.add_argument('path_to_gtf_3')
+    args = parser.parse_args()
+    size2quantity_1 = get_exons(args.path_to_gtf_1)
+    size2quantity_2 = get_exons(args.path_to_gtf_2)
+    size2quantity_3 = get_exons(args.path_to_gtf_3)
+    draw_distr(os.path.dirname(args.path_to_gtf_1), size2quantity_1, size2quantity_2, size2quantity_3)

@@ -1,0 +1,67 @@
+#!/hive/groups/recon/local/bin/python
+
+import bisect
+import sys
+import argparse
+import numpy
+from collections import Counter
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.pyplot as plt
+import os
+
+
+def zip_density(density):
+    density = sorted(density)
+    zipped = []
+    step = 50
+    for x in range(0,len(density)-step,step):
+        zipped.append(numpy.mean(density[x:x+step]))
+    return zipped
+
+def draw_distr(path, density_1, density_2, density_3):
+    pp=PdfPages(os.path.join(path,'plot_exons_density.pdf'))
+    plt.xlabel('Position in a sorted list')
+    plt.ylabel('Density')
+    density_1 = zip_density(density_1)
+    density_2 = zip_density(density_2)
+    density_3 = zip_density(density_3)
+    plt.plot(range(len(density_1)),density_1,'r.', label='domestic cat', color='crimson', markersize=3)
+    plt.plot(range(len(density_2)),density_2,'r.', label='human', color='darkkhaki', markersize=3)
+    plt.plot(range(len(density_3)),density_3,'r.', label='mouse', color='plum', markersize=3)
+    plt.legend(loc=4)
+    #plt.legend(loc=1, borderaxespad=0., fontsize=5)
+    plt.savefig(pp, format='pdf')
+    pp.close()
+
+def get_density(path):
+    exons = []
+    density = []
+    transcript = 0
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if line[0] == '#':
+                continue
+            line=line.split()
+            if line[2] == 'transcript':
+                if transcript > 0:
+                    density.append(float(sum(exons))/transcript)
+                exons = []
+                transcript = int(line[4]) - int(line[3])
+            if line[2] == 'exon':
+                length = int(line[4]) - int(line[3])
+                exons.append(length)
+    return density
+    
+if __name__ == '__main__' :
+    parser = argparse.ArgumentParser()
+    parser.add_argument('path_to_gtf_1')
+    parser.add_argument('path_to_gtf_2')
+    parser.add_argument('path_to_gtf_3')
+    args = parser.parse_args()
+    density_1 = get_density(args.path_to_gtf_1)
+    density_2 = get_density(args.path_to_gtf_2)
+    density_3 = get_density(args.path_to_gtf_3)
+    draw_distr(os.path.dirname(args.path_to_gtf_1), density_1, density_2, density_3)

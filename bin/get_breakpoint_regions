@@ -1,0 +1,37 @@
+#!/hive/groups/recon/local/bin/python
+'''
+get synteny blocks in bed in extracts breakpoint regions
+as coordinates between breakpoints
+'''
+import argparse
+
+def get_breakpoint_regions(bed):
+    with open(bed) as f:
+        prev_pos = 0
+        prev_chr = ''
+        prev_block = ''
+        #prev_strand = '+'
+        for line in f:
+            line = line.strip().split()
+            if prev_chr == '' or line[0] != prev_chr:
+                prev_chr = line[0]
+                prev_pos = int(line[2])
+                prev_block = line[3]    
+                #prev_strand = line[-1]
+            else:
+                block = line[3]
+                #strand = line[-1]
+                pos = int(line[1])
+                print '\t'.join([prev_chr, str(prev_pos), str(pos), prev_block+':'+block])
+                #bed6
+                #print '\t'.join([prev_chr, str(prev_pos), str(pos), prev_block+':'+block, '0', '+'])
+                prev_pos = int(line[2])
+                prev_block = block
+                #prev_strand = strand
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('bed', help='blocks_coords.bed should be sorted by chromosome')
+    args = parser.parse_args()
+    get_breakpoint_regions(args.bed)

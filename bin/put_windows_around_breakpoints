@@ -1,0 +1,26 @@
+#!/hive/groups/recon/local/bin/python
+
+import argparse
+
+def put_windows(bed, window_size, filter_size):
+    with open(bed) as f:
+        for line in f:
+            line = line.strip().split()
+            start = int(line[1])
+            end = int(line[2])
+            if end - start > filter_size:
+                continue
+            if (end - start) > 2 * window_size:
+                midpoint = (end - start) / 2
+                start = midpoint - window_size
+                end = midpoint + window_size
+            print '\t'.join([line[0],str(start),str(end)])
+
+        
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('bed', help='breakpoints list')
+    parser.add_argument('--window_size', help='size of window on each side of midpoint')
+    parser.add_argument('--filter', help='filter breakpoints larger then filter_size' )
+    args = parser.parse_args()
+    put_windows(args.bed, int(args.window_size), int(args.filter))
