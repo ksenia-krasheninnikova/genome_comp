@@ -223,29 +223,6 @@ def thread_specie_genome(specie_entries):
         sorted_chromosomes.append(sorted_c)
     return sorted_chromosomes
 
-'''
-#use this to sort blocks by specie chromosomes
-#def get_first_entry_for_specie_in_block(block, specie):
-    for e in block.entries:
-        if chroms[e.seq_id].description:
-            return e.seq_id
-
-#splits entries by chromosomes and sorts entries
-#on each chromosome according to start pos
-def sort_blocks_on_chromosomes(blocks, chroms, specie):
-    sorted_blocks = sorted(blocks, key=lambda x: get_any_entry_for_specie(x, specie))
-    acc_blocks = []
-    chromosomes = []
-    prev_id = -1
-    for e in sorted_blocks:
-        if get_any_entry_for_specie(e,specie) != prev_id:
-            chromosomes.append(acc_blocks)
-            acc_blocks = [e]
-            prev_id = e.entries[0].seq_id
-            continue
-        acc_blocks.append(e)
-    return chromosomes
-'''
 
 def find_distance(e1,e2):
     if e1.seq_id != e2.seq_id:
@@ -267,8 +244,6 @@ def normalize(specie1, specie2):
             print c1
             print c2
             continue
-        print 'c1',c1
-        print 'c2',c2
         for j in range(len(c1)):
             if c1[j].strand == '-':
                 c1[j].strand = '+'
@@ -339,20 +314,6 @@ def check_translocations(c):
     ls = zip(lengths, c_seq_ids)
     ls_sorted = sorted(ls, key=lambda x: x[0])
     return map(lambda x: x[1], ls_sorted[:-1])
-    '''
-    for e in c_seq_ids:
-        if prev_seq_id and prev_seq_id != e.seq_id:
-            pos = c.index(e)
-            rest_c = c[:pos]+c[pos+1:]
-            rest_length = sum(map(lambda x: math.abs(int(x.end)-int(x.start)), rest_c))
-            e_length = mas.abs(int(e.end) - int(e.start))
-            if e_length > rest_length:
-                translocations.append(e)
-            else:
-                translocations.append(rest_c)
-        prev_seq_id = e.seq_id
-    return translocations
-    '''
 
 '''
 reversal is the change of strand
@@ -364,53 +325,6 @@ every '-' is called reversal
 def check_reversals(c):
     return filter(lambda x: x.strand == '-', c)
 
-def identify_rearrangements_by_type(sp1, sp2) :
-    #print 'homolog:', c2_homolog.seq_id, c2_homolog.block_id
-    homologs = zip(sp1,sp2)
-    for c1,c2 in homologs:
-        if not c1 or not c2:
-            print 'skipping empty chromosome'
-            print c1
-            print c2
-            continue
-        blocks = zip(c1,c2)
-        #for x in c1:
-        '''
-        PRINT CHROMOSOMES 
-        print 'c1'
-        for e in c1:
-            e.print_out(), 
-        print 'c2'
-        for e in c2: 
-            e.print_out(),
-        #    x.print_out()
-        prev_e2 = ''
-        reversal = False
-        for e1,e2 in blocks:
-            if prev_e2:
-                if prev_e2.strand != e2.strand:
-                    if not reversal:
-                        reversal = True
-                        #we consider each '-' as reversal because we suppose 
-                        #that the genomes are normalized
-                        if prev_e2.strand == '-':
-                            print 'reversal', prev_e2.seq_id+':', prev_e2.end
-                        elif  e2.strand == '-':
-                            print 'reversal', e2.seq_id+':', e2.start    
-                else:
-                    reversal = False
-                if prev_e2.seq_id != e2.seq_id:
-                    print 'translocation start:', e2.seq_id+':',e2.start
-                elif prev_e2.end > e2.end and get_order(c2,prev_e2.seq_id) == '+' or prev_e2.end < e2.end and get_order(c2,prev_e2.seq_id) == '-':
-                    print 'transposition start:', e2.seq_id+':',e2.start
-            prev_e2 = e2
-        print '-----------' 
-        '''
-    # reversal: names and chromosomes and surroundings of blocks are the same, but signs of the blocks are different
-    # translocation: different chromosomes
-    # transposition: different order on the same chromosome
- 
-    
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('file', help='blocks_coords.txt')
@@ -452,10 +366,7 @@ if __name__ == '__main__':
         ##
         for e in specie2_grouped:
             specie2.append(search_paths(e))
-        #search_paths(specie2_grouped[182])
-        #specie2 = find_homologous_chromosomes(specie1, specie2)
         specie1,specie2 = normalize(specie1, specie2)
-        #identify_rearrangements_by_type(specie1, specie2)
         for c in specie2:
             for e in check_transpositions(c):
                 print 'transposition:',
