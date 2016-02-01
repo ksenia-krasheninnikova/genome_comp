@@ -5,7 +5,7 @@ as coordinates between breakpoints
 '''
 import argparse
 
-def get_breakpoint_regions(bed):
+def get_breakpoint_regions(bed, min_dist = None):
     with open(bed) as f:
         prev_pos = 0
         prev_chr = ''
@@ -22,9 +22,16 @@ def get_breakpoint_regions(bed):
                 block = line[3]
                 #strand = line[-1]
                 pos = int(line[1])
-                print '\t'.join([prev_chr, str(prev_pos), str(pos), prev_block+':'+block])
-                #bed6
-                #print '\t'.join([prev_chr, str(prev_pos), str(pos), prev_block+':'+block, '0', '+'])
+                if prev_pos > pos:
+                    prev_chr = ''
+                    continue
+                if min_dist:
+                    if pos - prev_pos > min_dist:
+                        print '\t'.join([prev_chr, str(prev_pos), str(pos), prev_block+':'+block])
+                        #bed6
+                        #print '\t'.join([prev_chr, str(prev_pos), str(pos), prev_block+':'+block, '0', '+'])
+                else:
+                    print '\t'.join([prev_chr, str(prev_pos), str(pos), prev_block+':'+block])
                 prev_pos = int(line[2])
                 prev_block = block
                 #prev_strand = strand
@@ -33,5 +40,10 @@ def get_breakpoint_regions(bed):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('bed', help='blocks_coords.bed should be sorted by chromosome')
+    parser.add_argument('--min_dist',help='minimal distance allowed between blocks to call it a breakpoint')
+
     args = parser.parse_args()
-    get_breakpoint_regions(args.bed)
+    if args.min_dist:
+        get_breakpoint_regions(args.bed, int(args.min_dist))
+    else:
+        get_breakpoint_regions(args.bed)
