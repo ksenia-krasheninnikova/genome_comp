@@ -28,8 +28,8 @@ def find_graph_edges(entries):
         i += 1
     ##in case we didn't filter out unsplitted chromosomes
     ##we add a loop
-    #if len(entries) == 1:
-    #    edges = [(entries[0],entries[0],0)]
+    if len(entries) == 1:
+        edges.append((entries[0][0],entries[0][0],0))
     return edges
 
 def dfs(v, v_prev, edges, level, max_level):
@@ -56,6 +56,7 @@ def dfs(v, v_prev, edges, level, max_level):
 def search_paths(entries):
     '''
     #PRINT ENTRIES
+    print 'entries:'
     for e in entries:
         for p in e:
             p.print_out()
@@ -73,9 +74,13 @@ def search_paths(entries):
         #-1 because max level number is len(entries)-1
         #-1 because number of edges is (number of entries)-1
         #in total -2
-        path = dfs(e, e, edges, 0, len(entries)-2)
+        max_level = len(entries)-2
+        if len(entries) == 1:
+            max_level = 0
+        path = dfs(e, e, edges, 0, max_level)
         if len(path) > 1:
             print 'Alternative solutions!'
+            print 'returning empty chromosome'
             return [] 
         thread = [path[0][0][0]]
         for p in path[0]:
@@ -83,6 +88,7 @@ def search_paths(entries):
         threads.append(thread)
     if len(threads) > 1:
         print 'Alternative solutions!'
+        print 'returning empty chromosome'
         return []
     return threads[0]
 
@@ -184,6 +190,7 @@ def filter_unsplitted_chromosomes(blocks, count_chrs, sps):
     for b in blocks:
         entries = b.entries
         upd_entries = []
+        upd_species = set()
         for e in entries:
             #seq_id = e.seq_id 
             #specie = chroms[int(seq_id)].get_specie()
@@ -191,8 +198,9 @@ def filter_unsplitted_chromosomes(blocks, count_chrs, sps):
             if specie in sps:
                 if count_chrs[e.seq_id] > 1:
                     upd_entries.append(e)
+                    upd_species.add(specie)
         #also count duplications?
-        if len(upd_entries) >= len(sps):
+        if len(upd_entries) >= len(sps) and len(upd_species) == len(sps):
         #if len(upd_entries) == 1:
         #if upd_entries:
             upd_blocks.append(Block(b.id,upd_entries))
@@ -241,8 +249,8 @@ def normalize(specie1, specie2):
         c2 = specie2[i]
         if not c1 or not c2:
             print 'skipping empty chromosome'
-            print c1
-            print c2
+            #print c1
+            #print c2
             continue
         for j in range(len(c1)):
             if c1[j].strand == '-':
@@ -329,10 +337,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('file', help='blocks_coords.txt')
     parser.add_argument('--report_breakpoints', action='store_true',help='report breakpoints among two --species')
+    parser.add_argument('--count_breakpoints', action='store_true',help='print number of breakpoints in each of --species')
     parser.add_argument('--species', nargs='+', help='species to check')
     args = parser.parse_args()
     chroms = parse_chromosomes(args.file)
     if args.report_breakpoints:
+        if len(args.species) != 2:
+            raise Exception("Can evaluate rearrangements only between two species")
         blocks,count_chrs = parse_blocks(args.file, True)
         blocks = filter_unsplitted_chromosomes(blocks, count_chrs, args.species)
         #get all the entries from specie1
@@ -347,23 +358,11 @@ if __name__ == '__main__':
         for sp in specie1:
             specie2_grouped.append([])
             for y in sp:
-                specie2_grouped[-1].append(filter(lambda x: x.block_id == y.block_id, entries))
+                c = filter(lambda x: x.block_id == y.block_id, entries)
+                specie2_grouped[-1].append(c)
+                if not c:
+                    print y.block_id
         specie2 = []
-        #this is for testing purpose
-        #for i in range(len(specie1)):
-        #    chr_sp1 = specie1[i]
-        #    chr_sp2 = specie2_grouped[i]
-        #    for j in range(len(chr_sp1)):
-        #        block_sp1 = chr_sp1[j]
-        #        block_sp1.print_out()
-        #    print
-        #    for j in range(len(chr_sp1)):
-        #        blocks_sp2 = chr_sp2[j]
-        #        for x in blocks_sp2:
-        #            x.print_out()
-        #    print '---'
-        #exit()
-        ##
         for e in specie2_grouped:
             specie2.append(search_paths(e))
         specie1,specie2 = normalize(specie1, specie2)
@@ -378,6 +377,12 @@ if __name__ == '__main__':
             for e in check_reversals(c):
                 print 'reversal',
                 e.print_out()
-    else:
-        blocks = parse_blocks(args.file)
+    elif args.count_breakpoints:
+        blocks,count_chrs = parse_blocks(args.file, True)
+        blocks = filter_unsplitted_chromosomes(blocks, count_chrs, args.species)
+        for s in args.species:
+            entries = get_specie_entries(blocks, s)
+            genome = thread_specie_genome(entries)
+            print sum(map(lambda x: len(x)-1, genome))
         
+
