@@ -3,6 +3,9 @@
 import argparse
 import math
 import itertools
+from collections import Counter
+import re
+import os
 
 SPLITTER = '-----------------------------------'
 
@@ -281,6 +284,27 @@ def check_order(list_a, sorted_list):
             list_a.insert(i,sorted_list[i])
     return transpositions
 
+'''
+we need it for two reasons:
+1. in order to count rearrangements we look at the previous entry and
+check if it's rearranged. sometimes we can find multiple possible previous entries.
+in this case we need to know which one is previous in this case
+2. in order to be able to report the breakpoints
+'''
+def get_previous_entries(list_entries, c):
+    rearrangement_ids = []
+    for e in list_entries:
+        rearrangement_ids.append(c.index(e))
+    rearrangement_ids = map(lambda x: x-1, rearrangement_ids)
+    rearrangement_prev = []
+    for i in rearrangement_ids:
+        if i == -1:
+            rearrangement_prev.append(None)
+        else:
+            rearrangement_prev.append(c[i])
+    return rearrangement_prev
+ 
+
 '''    
 transposition is a change of the genomic location on the same chromosome
 idea: transposition is a change of order in a sorted list
@@ -288,6 +312,7 @@ collect to possible interpretations of transpositions:
 in case sorted list in increasing or decreasing
 (this corresponds to entries coming in different order along a chromosome)
 choose the one interpretation that corresponds to less transpositions
+returns list of (prev entry, rearranged entry) s. get_previous_entries
 '''
 def check_transpositions(c):
     transpositions = []
@@ -305,10 +330,17 @@ def check_transpositions(c):
             transpositions += transpositions_up
         else:
             transpositions += transpositions_down
-    return transpositions
+    #find indices of entries that are previous to the transposed entries 
+    tps_prev = get_previous_entries(transpositions, c)
+    return zip(tps_prev, transpositions)
 
 '''
 translocation is a change of the genomic position to another chromosome
+choose the one interpretation that corresponds to less translocations (by length)
+generally the translocations can be counted without information about previous entries
+because they are already grouped into lists of unbroken segments of blocks.
+however we report translocations in the sema manner as reversals and trnaspositions
+for uniformity and for being able to report the breakpoints if needed
 '''
 def check_translocations(c):
     #seq_ids = map(lambda x: x.seq_id, c)
@@ -321,7 +353,11 @@ def check_translocations(c):
     lengths = map(lambda y: sum(map(lambda x: math.fabs(int(x.end)-int(x.start)), y)), c_seq_ids)
     ls = zip(lengths, c_seq_ids)
     ls_sorted = sorted(ls, key=lambda x: x[0])
-    return map(lambda x: x[1], ls_sorted[:-1])
+    translocations = map(lambda x: x[1], ls_sorted[:-1])
+    trans_prev = []
+    for tl in translocations:
+        trans_prev.append(get_previous_entries(tl, c))
+    return zip(trans_prev,translocations)
 
 '''
 reversal is the change of strand
@@ -329,29 +365,114 @@ here we use the normalization of two genomes. i.e. we brought the genome of spec
 to the form where all the entries have '+' strand, changing also the strand of 
 the corresponding entries in specie2
 every '-' is called reversal
+but if the whole 'chromosome' is '-' than nothing is reversed
 '''
 def check_reversals(c):
-    return filter(lambda x: x.strand == '-', c)
+    c_rev = filter(lambda x: x.strand == '-', c)
+    reversals = []
+    if len(c_rev) < len(c):
+        reversals = c_rev
+    if reversals:
+        rev_prev = get_previous_entries(reversals,c)
+        return zip(rev_prev,reversals)
+    else:
+        return []
+
+'''
+If block appears in genome several times than it's a duplication
+'''
+def check_duplications(blocks, specie):
+    l = get_specie_entries(blocks,specie)
+    c = Counter(map(lambda x: x.block_id, l))
+    dupl_block_ids = filter(lambda x: c[x] > 1, c.keys())
+    return filter(lambda x: x.block_id in dupl_block_ids, l)
+    
+
+def output_for_circos(blocks, species, prefixes, old_prefixes, output):
+    old_prefix='|'.join(args.old_prefixes)
+    with open(output,'w') as f:
+        for b in blocks:
+            e = b.entries
+            e1 = filter(lambda x: x.seq_id.split('.')[0] == species[0], e)[0]
+            e2 = filter(lambda x: x.seq_id.split('.')[0] == species[1], e)[0]
+            id = [s.strip() for s in re.split(old_prefix, e1.seq_id.split('.')[1])][1]
+            name1 = prefixes[0]+id
+            id = [s.strip() for s in re.split(old_prefix, e2.seq_id.split('.')[1])][1]
+            name2 = prefixes[1]+id
+            if e1.strand == '+':
+                start1 = e1.start
+                end1 = e1.end
+            else:
+                end1 = e1.start
+                start1 = e1.end
+            if e2.strand == '+':
+                start2 = e2.start
+                end2 = e2.end
+            else:
+                end2 = e2.start
+                start2 = e2.end
+            f.write(name1 + ' ' + str(start1) + ' ' + str(end1) + ' ' + name2 + ' ' + str(start2) + ' ' + str(end2)+ '\n')
+
+def print_out_genome_thread(species, entries, file_name):
+    with open(file_name,'w') as f:
+        i = 0
+        for c in entries:
+            i += 1
+            f.write(str(i)+'\n')
+            for e in c:
+                f.write('seq_id: ' + str(e.seq_id) + ' block_id: ' + str(e.block_id) + ' strand: '\
+                + str(e.strand) + ' start: ' + str(e.start) + ' end: ' + str(e.end) + '\n')
+    
+#def get_stat_prev(entries):
+#    upd_entries = {}
+#    for c in entries:
+#        a = dict(zip(c,[None]+c[:-1]))
+#        for e in a.keys():
+#            if e in upd_entries.keys():
+#                upd_entries[e] = upd_entries[e] + a[e]
+#            else:
+#                upd_entries[e] = a[e]
+#        #upd_entries.update(dict(zip(c,[None]+c[:-1])))
+#    return upd_entries
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('file', help='blocks_coords.txt')
-    parser.add_argument('--report_breakpoints', action='store_true',help='report breakpoints among two --species')
-    parser.add_argument('--count_breakpoints', action='store_true',help='print number of breakpoints in each of --species')
+    parser.add_argument('--report_transpositions', action='store_true', help='report transpositions in specie2 related to specie1')
+    parser.add_argument('--report_translocations', action='store_true', help='report translocations in specie2 related to specie1')
+    parser.add_argument('--report_reversals', action='store_true', help='report reversals in specie2 related to specie1')
+    parser.add_argument('--report_duplications', action='store_true', help='search for duplications in each of --species')
+    parser.add_argument('--count_breakpoints', action='store_true', help='print number of breakpoints in each of --species')
+    parser.add_argument('--circos_output', help='output the --species for circos plot')
     parser.add_argument('--species', nargs='+', help='species to check')
+    parser.add_argument('--prefixes', nargs='+', help='prefixes for circos naming in species')
+    parser.add_argument('--old_prefixes', nargs='+', help='prefixes to rename')
     args = parser.parse_args()
     chroms = parse_chromosomes(args.file)
-    if args.report_breakpoints:
+    blocks, count_chrs = parse_blocks(args.file, True)
+    if args.report_duplications:
+        for sp in args.species:
+            ds = check_duplications(blocks, sp)
+            if ds:
+                for e in ds:
+                    print 'duplications',
+                    e.print_out()
+            else:
+                print 'No duplications in', sp
+    blocks = filter_unsplitted_chromosomes(blocks, count_chrs, args.species)
+    if args.report_translocations or args.report_transpositions or args.report_reversals:
         if len(args.species) != 2:
             raise Exception("Can evaluate rearrangements only between two species")
-        blocks,count_chrs = parse_blocks(args.file, True)
-        blocks = filter_unsplitted_chromosomes(blocks, count_chrs, args.species)
         #get all the entries from specie1
         entries = get_specie_entries(blocks, args.species[0])
         #sort entries by chromosomes for specie1
         specie1 = thread_specie_genome(entries)
+        #Tfor testing purposes
+        test_path = '/hive/groups/recon/projs/felidae_comp/bin'
+        print_out_genome_thread(args.species[0],specie1,os.path.join(test_path,'tmp1'))
         entries = get_specie_entries(blocks, args.species[1])
-        #specie2 = thread_specie_genome(entries)
+        print_out_genome_thread(args.species[1],thread_specie_genome(entries),os.path.join(test_path,'tmp2'))
+        specie2 = thread_specie_genome(entries)
         specie2_grouped = []
         #group entries in specie2 according to order of blocks on chromosomes
         #in specie1
@@ -367,22 +488,60 @@ if __name__ == '__main__':
             specie2.append(search_paths(e))
         specie1,specie2 = normalize(specie1, specie2)
         for c in specie2:
-            for e in check_transpositions(c):
-                print 'transposition:',
-                e.print_out()
-            for e in check_translocations(c):
-                print 'translocation:'
-                for x in e:
-                    x.print_out()
-            for e in check_reversals(c):
-                print 'reversal',
-                e.print_out()
-    elif args.count_breakpoints:
-        blocks,count_chrs = parse_blocks(args.file, True)
-        blocks = filter_unsplitted_chromosomes(blocks, count_chrs, args.species)
+            if args.report_transpositions:
+                count_trp = 0
+                trp = check_transpositions(c)
+                for e in trp:
+                    this_prev = e[0] 
+                    this_trp = e[1]
+                    #count transposition only once if 
+                    #it occured in neighbouring blocks
+                    if not this_prev in map(lambda x: x[1], trp):
+                        count_trp += 1
+                    print 'transposition:',
+                    this_trp.print_out()
+                if count_trp:
+                    print 'overall transpositions', count_trp
+            if args.report_translocations:
+                count_trl = 0
+                trl = check_translocations(c)
+                all_translocated_entries = map(lambda x: x[1], trl)
+                all_translocated_entries = sum(all_translocated_entries, [])
+                for e in trl:
+                    this_prev = e[0]
+                    this_trl = e[1]
+                    if not this_prev in all_translocated_entries:
+                        count_trl += 1
+                    print 'translocation:'
+                    for x in e[1]:
+                        x.print_out()
+                if count_trl: 
+                    #count_trl == len(e[0]) 
+                    #for explanation s. docs to check_translocations()
+                    print 'overall translocations', count_trl
+            if args.report_reversals:
+                count_rev = 0
+                rev = check_reversals(c)
+                for e in rev:
+                    this_prev = e[0]
+                    this_rev = e[1]
+                    #count reversal only once if
+                    #it occured in neighbouring blocks
+                    if not this_prev in map(lambda x: x[1], rev):
+                        count_rev += 1
+                    print 'reversal:',
+                    this_rev.print_out()
+                if count_rev:
+                    print 'overall reversals', count_rev
+    if args.count_breakpoints:
         for s in args.species:
             entries = get_specie_entries(blocks, s)
             genome = thread_specie_genome(entries)
             print sum(map(lambda x: len(x)-1, genome))
-        
+    if args.circos_output:
+        if len(args.species) != 2:
+            raise Exception("Can only draw circos plot for two species")
+        if len(args.prefixes) != 2:
+            raise Exception("Specify two species prefixes with --prefixes")
+        output_for_circos(blocks, args.species, args.prefixes, args.old_prefixes, args.circos_output)
 
