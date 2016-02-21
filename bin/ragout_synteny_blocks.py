@@ -377,16 +377,24 @@ def check_reversals(c):
         return zip(rev_prev,reversals)
     else:
         return []
-
+#def check_duplications(blocks, specie):
+#    l = get_specie_entries(blocks,specie)
+#    c = Counter(map(lambda x: x.block_id, l))
+#    dupl_block_ids = filter(lambda x: c[x] > 1, c.keys())
+#    return filter(lambda x: x.block_id in dupl_block_ids, l)
 '''
-If block appears in genome several times than it's a duplication
+If block appears in genome several times then it's a duplication
+returns species entries that belong to duplicated blocks
 '''
-def check_duplications(blocks, specie):
+def check_duplications(c, blocks, specie):
     l = get_specie_entries(blocks,specie)
-    c = Counter(map(lambda x: x.block_id, l))
-    dupl_block_ids = filter(lambda x: c[x] > 1, c.keys())
-    return filter(lambda x: x.block_id in dupl_block_ids, l)
-    
+    cnt = Counter(map(lambda x: x.block_id, l))
+    dups = filter(lambda x: cnt[x.block_id] > 1, c)
+    if dups:
+        dup_prev = get_previous_entries(dups,c)
+        return zip(dup_prev,dups)
+    else:
+        return []
 
 def output_for_circos(blocks, species, prefixes, old_prefixes, output):
     old_prefix='|'.join(args.old_prefixes)
@@ -452,15 +460,23 @@ if __name__ == '__main__':
     blocks, count_chrs = parse_blocks(args.file, True)
     if args.report_duplications:
         for sp in args.species:
-            ds = check_duplications(blocks, sp)
-            if ds:
-                for e in ds:
-                    print 'duplications',
-                    e.print_out()
-            else:
-                print 'No duplications in', sp
+            entries = get_specie_entries(blocks, sp)
+            entries = thread_specie_genome(entries)
+            for c in entries:
+                count_dup = 0
+                dup = check_duplications(c, blocks, sp)
+                for e in dup:
+                    this_prev = e[0]
+                    this_dup = e[1]
+                    if not this_prev in map(lambda x:x[1], dup):
+                        count_dup += 1
+                    print 'duplication:',
+                    this_dup.print_out()
+                if count_dup:
+                    print 'overall duplications', count_dup
     blocks = filter_unsplitted_chromosomes(blocks, count_chrs, args.species)
-    if args.report_translocations or args.report_transpositions or args.report_reversals:
+    if args.report_translocations or args.report_transpositions or args.report_reversals\
+         or args.report_duplications:
         if len(args.species) != 2:
             raise Exception("Can evaluate rearrangements only between two species")
         #get all the entries from specie1
@@ -468,10 +484,10 @@ if __name__ == '__main__':
         #sort entries by chromosomes for specie1
         specie1 = thread_specie_genome(entries)
         #Tfor testing purposes
-        test_path = '/hive/groups/recon/projs/felidae_comp/bin'
-        print_out_genome_thread(args.species[0],specie1,os.path.join(test_path,'tmp1'))
+        #Ttest_path = '/hive/groups/recon/projs/felidae_comp/bin'
+        #Tprint_out_genome_thread(args.species[0],specie1,os.path.join(test_path,'tmp1'))
         entries = get_specie_entries(blocks, args.species[1])
-        print_out_genome_thread(args.species[1],thread_specie_genome(entries),os.path.join(test_path,'tmp2'))
+        #Tprint_out_genome_thread(args.species[1],thread_specie_genome(entries),os.path.join(test_path,'tmp2'))
         specie2 = thread_specie_genome(entries)
         specie2_grouped = []
         #group entries in specie2 according to order of blocks on chromosomes
@@ -488,6 +504,20 @@ if __name__ == '__main__':
             specie2.append(search_paths(e))
         specie1,specie2 = normalize(specie1, specie2)
         for c in specie2:
+            '''
+            if args.report_duplications:
+                count_dup = 0
+                dup = check_duplications(c, blocks, args.species[1])
+                for e in dup:
+                    this_prev = e[0]
+                    this_dup = e[1]
+                    if not this_prev in map(lambda x:x[1], dup):
+                        count_dup += 1
+                    print 'duplication:',
+                    this_dup.print_out()
+                if count_dup:
+                    print 'overall duplications', count_dup
+                    '''
             if args.report_transpositions:
                 count_trp = 0
                 trp = check_transpositions(c)
