@@ -343,13 +343,9 @@ however we report translocations in the sema manner as reversals and trnaspositi
 for uniformity and for being able to report the breakpoints if needed
 '''
 def check_translocations(c):
-    #seq_ids = map(lambda x: x.seq_id, c)
-    #seq_ids = set(seq_ids)
     c_seq_ids =[]
     for e in itertools.groupby(c, lambda x: x.seq_id):
         c_seq_ids.append(list(e[1]))
-    #prev_seq_id = ''
-    #for e in c:
     lengths = map(lambda y: sum(map(lambda x: math.fabs(int(x.end)-int(x.start)), y)), c_seq_ids)
     ls = zip(lengths, c_seq_ids)
     ls_sorted = sorted(ls, key=lambda x: x[0])
@@ -377,11 +373,7 @@ def check_reversals(c):
         return zip(rev_prev,reversals)
     else:
         return []
-#def check_duplications(blocks, specie):
-#    l = get_specie_entries(blocks,specie)
-#    c = Counter(map(lambda x: x.block_id, l))
-#    dupl_block_ids = filter(lambda x: c[x] > 1, c.keys())
-#    return filter(lambda x: x.block_id in dupl_block_ids, l)
+
 '''
 If block appears in genome several times then it's a duplication
 returns species entries that belong to duplicated blocks
@@ -431,18 +423,6 @@ def print_out_genome_thread(species, entries, file_name):
                 f.write('seq_id: ' + str(e.seq_id) + ' block_id: ' + str(e.block_id) + ' strand: '\
                 + str(e.strand) + ' start: ' + str(e.start) + ' end: ' + str(e.end) + '\n')
     
-#def get_stat_prev(entries):
-#    upd_entries = {}
-#    for c in entries:
-#        a = dict(zip(c,[None]+c[:-1]))
-#        for e in a.keys():
-#            if e in upd_entries.keys():
-#                upd_entries[e] = upd_entries[e] + a[e]
-#            else:
-#                upd_entries[e] = a[e]
-#        #upd_entries.update(dict(zip(c,[None]+c[:-1])))
-#    return upd_entries
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('file', help='blocks_coords.txt')
@@ -504,20 +484,6 @@ if __name__ == '__main__':
             specie2.append(search_paths(e))
         specie1,specie2 = normalize(specie1, specie2)
         for c in specie2:
-            '''
-            if args.report_duplications:
-                count_dup = 0
-                dup = check_duplications(c, blocks, args.species[1])
-                for e in dup:
-                    this_prev = e[0]
-                    this_dup = e[1]
-                    if not this_prev in map(lambda x:x[1], dup):
-                        count_dup += 1
-                    print 'duplication:',
-                    this_dup.print_out()
-                if count_dup:
-                    print 'overall duplications', count_dup
-                    '''
             if args.report_transpositions:
                 count_trp = 0
                 trp = check_transpositions(c)
