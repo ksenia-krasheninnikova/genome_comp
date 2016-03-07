@@ -11,7 +11,7 @@ FOLDER="$1"
 HAL="$2"
 
 #count number of blocks
-$(echo -e 'genome\tscale\tnum\tcov\tmedian size' > $FOLDER/number.stats);
+$(echo -e 'genome\tscale\tnum\tcov\tmedian size\tbreakpoints_number' > $FOLDER/number.stats);
 for e in $(ls -d $FOLDER/[0-9]*); do
     p=${e%%};
     echo $(ls $p/"blocks_coords.txt");
@@ -25,7 +25,7 @@ for e in $(ls -d $FOLDER/[0-9]*); do
             $(./ragout_blocks_to_bed.py $p/"blocks_coords.txt" --specie $g > $p/"blocks_coords_$g.bed");
             #counting number of blocks
             n=$(cat $p/"blocks_coords_$g.bed" | wc -l);
-            TMP_INTERSECT=tmp.int
+            TMP_INTERSECT=$p/"tmp.int"
             $(bedtools intersect -a $p/blocks_coords_$g.bed -b $TMP_GENOME > $TMP_INTERSECT);
             cov=$(awk '{sum += $3 - $2} END {print sum}' $TMP_INTERSECT);
             if [ -z "$cov" ]; then
@@ -35,8 +35,10 @@ for e in $(ls -d $FOLDER/[0-9]*); do
             cov=$(echo print $cov/$genome_size. | python);
             #count median size in file
             median=$(sort -n $p/blocks_coords_$g.bed | awk ' { a[i++]=$3 - $2; } END { print a[int(i/2)]; }')
+            #count number of breakpoints
+            br_count=$(./ragout_synteny_blocks.py $p/"blocks_coords.txt" --count_breakpoints --species $g)
             #print out results
-            $(echo -e $g'\t'$(basename $p)'\t'$n'\t'$cov'\t'$median >> $FOLDER/number.stats);
+            $(echo -e $g'\t'$(basename $p)'\t'$n'\t'$cov'\t'$median'\t'$br_count >> $FOLDER/number.stats);
             $(rm $TMP_INTERSECT);
         fi
         $(rm $TMP_GENOME);
