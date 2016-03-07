@@ -22,6 +22,11 @@ def find_graph_edges(entries):
             for e_next in v_next:
                 if e.seq_id == e_next.seq_id:
                     edges.append((e,e_next,i))
+                    '''
+                    print i
+                    e.print_out()
+                    e_next.print_out()
+                    '''
                     appended = True
         #in case we didn't found the next block on the same chromosome
         #add all the following blocks (on all the chromosomes)
@@ -35,16 +40,22 @@ def find_graph_edges(entries):
         edges.append((entries[0][0],entries[0][0],0))
     return edges
 
-def dfs(v, v_prev, edges, level, max_level):
+def dfs(v, edges, level, max_level):
     new_paths = []
-    e_level = []
     for e in edges:
-        if e[2] == level:
-            e_level.append(e) 
+        #no check that the next vertex equals the end of the previous edge
+        if e[2] == level: 
             if level == max_level:
                 new_paths.append([(e[0],e[1])])
             else:
-                for l in dfs(e[1], e[0], edges, level+1, max_level):
+                for l in dfs(e[1], edges, level+1, max_level):
+                    '''
+                    print 'l:'
+                    for x in l:
+                        x[0].print_out()
+                        x[1].print_out()
+                        print '-----'
+                    '''
                     new_paths.append([(e[0],e[1])] + l)
     #there can be multiple paths in case of at some point the neighbouring blocks 
     #have multiple alternative chromosomes like this:
@@ -53,6 +64,38 @@ def dfs(v, v_prev, edges, level, max_level):
     #here a,b,c,d - chromosomes, and alternative paths are a b d and a c d
     #also, b and c can belong to different locations on the same chromosome
     return new_paths
+
+'''
+in case a block contains one entry in specie1 and two entries in specie2
+it will result in two alternative paths (actually a bubbles) that we will try to merge
+by sorting according the positions of these two entries along the chromosome in specie2
+'''
+def try_merge(path) :
+    entries_paths = []
+    for e in path:
+        entries_paths.append([e[0][1]])
+        entries_paths[-1] += map(lambda x: x[1], e[1:])
+    zipped_path = zip(*entries_paths)
+    merged_path = []
+    #for e in zipped_path:
+    #    print e
+    for e in zipped_path :
+        #in case all are equal
+        if e[0].equals_to_list(e[1:]):
+            merged_path.append(e[0])
+        else:
+            #if all are on the same chromosome
+            if len(set(map(lambda x: x.seq_id, e))) == 1:
+                a = sorted(e, key=lambda x: x.start)
+                merged_path += a
+            else:
+                print 'cant merge!'
+                e[0].print_out()
+                for z in e[1:]:
+                    z.print_out()
+                print '----'
+                return path
+    return [merged_path]
 
 #entries - a chromosome consists in a list of blocks
 #each block is also a list of possible alternative locations of this block
@@ -80,11 +123,26 @@ def search_paths(entries):
         max_level = len(entries)-2
         if len(entries) == 1:
             max_level = 0
-        path = dfs(e, e, edges, 0, max_level)
+        path = dfs(e, edges, 0, max_level)
         if len(path) > 1:
-            print 'Alternative solutions!'
-            print 'returning empty chromosome'
-            return [] 
+            path = try_merge(path)
+            if len(path) == 1:
+                return path[0]
+            else:
+                print 'Alternative solutions!'
+                print len(path)
+                '''
+                i = 0
+                for p in path:
+                    i += 1
+                    print i
+                    for x in p:
+                        x[0].print_out()
+                        x[1].print_out()
+                        print '----'
+                    '''
+                print 'returning empty chromosome'
+                return [] 
         thread = [path[0][0][0]]
         for p in path[0]:
             thread.append(p[1])
@@ -125,6 +183,17 @@ class Entry:
 
     def get_specie(self):
         return self.seq_id.split('.')[0]
+
+    def equals(self, e):
+        return self.seq_id == e.seq_id and self.strand == e.strand\
+                and self.start == e.start and self.end == e.end\
+                and self.length == e.length
+
+    def equals_to_list(self, e_list):
+        for x in e_list:
+            if not self.equals(x):
+                return False
+        return True
 
     def print_out(self):
         print 'seq_id:',self.seq_id, 'block_id:', self.block_id, 'strand:', self.strand, 'start:', self.start, 'end:', self.end, 'length:', self.length
@@ -303,7 +372,16 @@ def get_previous_entries(list_entries, c):
         else:
             rearrangement_prev.append(c[i])
     return rearrangement_prev
- 
+
+'''
+each translocation is presented as a list which differs from
+the presentation of other rearrangements
+'''
+def get_previous_entry_for_translocation(transloc, c):
+    r_id = c.index(transloc[0])
+    if r_id == 0:
+        return None
+    return c[r_id - 1]
 
 '''    
 transposition is a change of the genomic location on the same chromosome
@@ -352,7 +430,7 @@ def check_translocations(c):
     translocations = map(lambda x: x[1], ls_sorted[:-1])
     trans_prev = []
     for tl in translocations:
-        trans_prev.append(get_previous_entries(tl, c))
+        trans_prev.append(get_previous_entry_for_translocation(tl, c))
     return zip(trans_prev,translocations)
 
 '''
@@ -480,8 +558,13 @@ if __name__ == '__main__':
                 if not c:
                     print y.block_id
         specie2 = []
+        cnt_empty = 0
         for e in specie2_grouped:
-            specie2.append(search_paths(e))
+            p = search_paths(e)
+            if not p:
+                cnt_empty += 1 
+            specie2.append(p)
+        print 'unresolved:', cnt_empty
         specie1,specie2 = normalize(specie1, specie2)
         for c in specie2:
             if args.report_transpositions:
@@ -508,6 +591,9 @@ if __name__ == '__main__':
                     this_trl = e[1]
                     if not this_prev in all_translocated_entries:
                         count_trl += 1
+                    print 'whole chromosome:'
+                    for x in c:
+                        x.print_out()
                     print 'translocation:'
                     for x in e[1]:
                         x.print_out()
