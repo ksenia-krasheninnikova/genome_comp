@@ -1,8 +1,10 @@
 #!/hive/groups/recon/local/bin/python
 
-import argparse
 from collections import Counter
-import ragout_synteny_blocks
+
+import argparse
+
+from synteny_blocks import ragout_synteny_blocks
 
 
 def get_seq_ids_for_specie(chroms, specie):

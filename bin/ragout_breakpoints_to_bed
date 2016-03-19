@@ -1,8 +1,9 @@
 #!/hive/groups/recon/local/bin/python
 
 import argparse
-from collections import Counter
-import ragout_synteny_blocks
+
+from synteny_blocks import ragout_synteny_blocks
+
 
 def get_location(seq_id, chroms):
     for c in chroms:
