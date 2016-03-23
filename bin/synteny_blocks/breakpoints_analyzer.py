@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import re
 
 import argparse
 
@@ -8,7 +7,7 @@ import model
 import utils
 from blocks_to_paths_processor import BlocksToPathsProcessor
 import rearrangements_type
-
+import breakpoints_classifier
 
 def print_out_genome_thread(species, entries, file_name):
     with open(file_name,'w') as f:
@@ -32,9 +31,21 @@ if __name__ == '__main__':
     parser.add_argument('--species', nargs='+', help='species to check')
     parser.add_argument('--prefixes', nargs='+', help='prefixes for circos naming in species')
     parser.add_argument('--old_prefixes', nargs='+', help='prefixes to rename')
+    parser.add_argument('--classify_breakpoints', action='store_true', help='find out which species contain breakpoint')
+    parser.add_argument('--ref_genome')
+
     args = parser.parse_args()
     chroms = model.parse_chromosomes(args.file)
     blocks, count_chrs = model.parse_blocks(args.file, True)
+    if args.classify_breakpoints:
+        if not args.ref_genome:
+            raise Exception('reference genome is needed for breakpoints classification')
+        breakpoints = breakpoints_classifier.run(blocks, args.ref_genome)
+        for k in breakpoints.keys():
+            k[0].print_out()
+            k[1].print_out()
+            print breakpoints[k]
+        exit()
     if args.report_duplications:
         for sp in args.species:
             entries = utils.get_specie_entries(blocks, sp)

@@ -57,6 +57,9 @@ class Block:
         for e in self.entries:
             e.print_out()
 
+    def get_species(self):
+        return set(map(lambda x: x.get_specie(), self.entries))
+
 def parse_chromosomes(f):
     chroms = {}
     with open(f) as blocks_file:
