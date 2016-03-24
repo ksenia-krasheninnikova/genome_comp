@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from get_weighted_coverage_stats import evaluate_weighted_coverage
+from get_coverage_stats import evaluate_weighted_coverage
 
 class TestEvaluate_weighted_coverage(TestCase):
     def test_evaluate_weighted_coverage(self):
