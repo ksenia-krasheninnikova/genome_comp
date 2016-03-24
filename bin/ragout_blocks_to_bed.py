@@ -2,7 +2,7 @@
 
 import argparse
 
-from synteny_blocks import ragout_synteny_blocks
+import synteny_blocks.model as model
 
 
 def get_location(seq_id, chroms):
@@ -45,8 +45,8 @@ if  __name__ == '__main__':
     parser.add_argument('file', help='blocks_coords.txt')
     parser.add_argument('--specie')
     args = parser.parse_args()
-    chroms = ragout_synteny_blocks.parse_chromosomes(args.file)
-    blocks = ragout_synteny_blocks.parse_blocks(args.file)
+    chroms = model.parse_chromosomes(args.file)
+    blocks = model.parse_blocks(args.file)
     if args.specie:
         print_specie_bed(blocks, chroms, args.specie)
     else:

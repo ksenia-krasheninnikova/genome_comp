@@ -36,7 +36,7 @@ for e in $(ls -d $FOLDER/[0-9]*); do
             #count median size in file
             median=$(sort -n $p/blocks_coords_$g.bed | awk ' { a[i++]=$3 - $2; } END { print a[int(i/2)]; }')
             #count number of breakpoints
-            br_count=$(./ragout_synteny_blocks.py $p/"blocks_coords.txt" --count_breakpoints --species $g)
+            br_count=$(./synteny_blocks/breakpoints_analyzer.py $p/"blocks_coords.txt" --count_breakpoints --species $g)
             #print out results
             $(echo -e $g'\t'$(basename $p)'\t'$n'\t'$cov'\t'$median'\t'$br_count >> $FOLDER/number.stats);
             $(rm $TMP_INTERSECT);
