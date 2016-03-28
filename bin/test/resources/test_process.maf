@@ -1,0 +1,40 @@
+##maf version=1 scoring=N/A
+a score=0.000000
+s cow.chr8                         22562810 54 + 113384836 ctagggtcgcaaaaagtcggacatgactgaagtgacttagcacacctgcaCATA
+s pangolin_chineese.SCAFFOLD21866      5052  0 +     28158 ------------------------------------------------------
+s pangolin_malayan.KN016443_1         13319  0 -     68650 ------------------------------------------------------
+s mouse.chr4                       67627478  0 - 156508116 ------------------------------------------------------
+s human.chr9                      119731275  0 - 141213431 ------------------------------------------------------
+s cat.chrD4                        48708929  0 -  94492513 ------------------------------------------------------
+s dog.chr11                        33508328  0 -  74389097 ------------------------------------------------------
+s horse.chr23                      15336794  0 -  55726280 ------------------------------------------------------
+
+a score=0.000000
+s cow.chr8                         22562864 70 + 113384836 CACCATATAGGTGCTGCTAAGCCTCTGATAAACATAACTCCATGAAAGACCATTCCTTTAAAAAGAAAAA
+s pangolin_chineese.SCAFFOLD21866      5054 52 +     28158 TGTCTTATAGATACT-----------GATAAATATTACTCTGTGAAAgacta---ctttaaaaa-aa---
+s pangolin_malayan.KN016443_1         13321 52 -     68650 TGTCTTATAGATGCT-----------GATAAATATTACTCTGTGAAAgacta---ctttaaaaa-aa---
+s mouse.chr4                       67627480 69 - 156508116 TGTGCTCTGGCCACTACCAGATCTATAATAAATAATACTCCATGAAATACCACTGCTTGAAAAAGGA-AG
+s human.chr9                      119731277 65 - 141213431 TTCTTTATAGGTGCTGATAAGCCTTTGGTAAGTTTTACTCCATGAAAGACTATTACTGAA-----AAAAA
+s cat.chrD4                        48708940 63 -  94492513 CACGCTATAGGTGCTGCTAAGCCTCTGATAAATATTACTCCATGAAAGAGTACTCCTTTAAAA-------
+s dog.chr11                        33508336 66 -  74389097 TGCCCTAGAGGTGCTGCTAAACCTCTGATAAACATTACT-CATGAAAGAGTATTCCTTTaaaaaaaa---
+s horse.chr23                      15336796 70 -  55726280 GGCCTTACAGGGTCTGCTAAGCCTCTCATAAATATTACTTTGTGAAAGACTACTCTTTAAAAAAAACAAA
+
+a score=0.000000
+s cow.chr8                         22562934 14 + 113384836 CTTACTCTCAATAA
+s pangolin_chineese.SCAFFOLD21866      5106 11 +     28158 --cactctcaaga-
+s pangolin_malayan.KN016443_1         13373 11 -     68650 --cactctCAAGA-
+s mouse.chr4                       67627549 14 - 156508116 CTTGCTCTCAATAA
+s human.chr9                      119731342 14 - 141213431 CGTAATCTCAATAA
+s cat.chrD4                        48709003 11 -  94492513 ---ACTCTCAATAA
+s dog.chr11                        33508402 11 -  74389097 --TACTCTCAA-AA
+s horse.chr23                      15336871 14 -  55726280 CTTACTCTCAATAA
+
+a score=0.000000
+s cow.chr8                         22562948 23 + 113384836 AAGAACTTTAATAAGCTTGACTA
+s pangolin_chineese.SCAFFOLD21866     11957 23 +     28158 ACAACTTTTAAGAAGCTTAGCTA
+s pangolin_malayan.KN016443_1         19178 22 -     68650 aCAA-CTTTAAGAAGCTTAGCTA
+s mouse.chr4                       67627563 23 - 156508116 AAGTGCATTACTAAGCCTGAGTA
+s human.chr9                      119731356 23 - 141213431 AAGAACTTTAATAAGCTTGACTA
+s cat.chrD4                        48709014 23 -  94492513 AAGAACTTTAATAAGCTTGACTA
+s dog.chr11                        33508413 23 -  74389097 AAGAATTTTAATAAGCTTGACCA
+s horse.chr23                      15336885 23 -  55726280 AAGAAATTTATTAAGCTTGACTA
