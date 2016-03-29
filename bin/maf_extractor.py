@@ -16,10 +16,10 @@ class MAF_Entry:
     def __init_global_coords(self):
         if self.strand == '+':
             self.global_start = self.start
-            self.global_end = self.end
+            self.global_end = self.start + self.length
         elif self.strand == '-':
-            self.global_start = self.all_length - self.start
-            self.global_end = self.all_length - self.end
+            self.global_end = self.all_length - self.start
+            self.global_start = self.all_length - self.start - self.length
 
     def print_out(self):
         print ' '.join(map(str,['s', self.genome + '.' + self.chrom, self.start,\
@@ -59,25 +59,29 @@ def process(bed_file, maf_file):
     regions = parse_bed(bed_file)
     with open(maf_file) as maf:
         maf_entries = []
-        for line in maf_file:
+        for line in maf:
             line = line.strip()
             if not line or '##' in line:
                 continue
-            if 'a' in line and maf_entries:
-                intersected_regions = intersect(maf_entries, regions)
-                for e in intersected_regions:
-                    print '##' + e.print_out
-                print 'a'
-                for maf_e in maf_entries:
-                    maf_e.print_out()
+            if line[0] == 'a':
+                if maf_entries:
+                    intersected_regions = intersect(maf_entries, regions)
+                    for e in intersected_regions:
+                        print '##',
+                        e.print_out()
+                    print 'a'
+                    for maf_e in maf_entries:
+                        maf_e.print_out()
+                    print
+                    maf_entries = []
             else:
                 line = line.split()
                 line = line[1:]
-                print line
+
                 genome, chrom = line[0].split('.')
                 maf_entries.append(MAF_Entry(genome, chrom, int(line[1]), int(line[2]),\
                                              line[3], int(line[4]), line[4]))
-                maf_entries = []
+
 
 
 if __name__ == '__main__':
