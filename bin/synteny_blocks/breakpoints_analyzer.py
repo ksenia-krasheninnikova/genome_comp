@@ -9,15 +9,18 @@ from blocks_to_paths_processor import BlocksToPathsProcessor
 import rearrangements_type
 import breakpoints_classifier
 
-def print_out_genome_thread(species, entries, file_name):
-    with open(file_name,'w') as f:
+def print_out_genome_thread(species, entries):
+    #with open(file_name,'w') as f:
         i = 0
         for c in entries:
             i += 1
-            f.write(str(i)+'\n')
+            #f.write(str(i)+'\n')
+            print i
             for e in c:
-                f.write('seq_id: ' + str(e.seq_id) + ' block_id: ' + str(e.block_id) + ' strand: '\
-                + str(e.strand) + ' start: ' + str(e.start) + ' end: ' + str(e.end) + '\n')
+                # f.write('seq_id: ' + str(e.seq_id) + ' block_id: ' + str(e.block_id) + ' strand: '\
+                # + str(e.strand) + ' start: ' + str(e.start) + ' end: ' + str(e.end) + '\n')
+                print 'seq_id: ' + str(e.seq_id) + ' block_id: ' + str(e.block_id) + ' strand: '\
+                + str(e.strand) + ' start: ' + str(e.start) + ' end: ' + str(e.end)
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -33,6 +36,7 @@ if __name__ == '__main__':
     parser.add_argument('--old_prefixes', nargs='+', help='prefixes to rename')
     parser.add_argument('--classify_breakpoints', action='store_true', help='find out which species contain breakpoint')
     parser.add_argument('--ref_genome')
+    parser.add_argument('--print_out_genomes', help='prints out genomes of --species in terms of blocks')
 
     args = parser.parse_args()
     chroms = model.parse_chromosomes(args.file)
@@ -145,6 +149,12 @@ if __name__ == '__main__':
                     this_rev.print_out()
                 if count_rev:
                     print 'overall reversals', count_rev
+    if args.print_out_genomes :
+        for sp in args.species:
+            entries = utils.get_specie_entries(blocks, sp)
+            specie_genome = utils.thread_specie_genome(entries)
+            print_out_genome_thread(args.species[0],sp)
+
     if args.count_breakpoints:
         for s in args.species:
             entries = utils.get_specie_entries(blocks, s)
