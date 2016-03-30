@@ -31,6 +31,9 @@ class Entry:
     def get_specie(self):
         return self.seq_id.split('.')[0]
 
+    def get_chrom(self):
+        return self.seq_id.split('.')[1]
+
     def equals(self, e):
         return self.seq_id == e.seq_id and self.strand == e.strand\
                 and self.start == e.start and self.end == e.end\
@@ -59,6 +62,51 @@ class Block:
 
     def get_species(self):
         return set(map(lambda x: x.get_specie(), self.entries))
+
+class BED_Entry:
+    def __init__(self, genome, chrom, start, end):
+        self.genome = genome
+        self.chrom = chrom
+        self.start = start
+        self.end = end
+
+    def print_out(self):
+        print ' '.join(map(str,[self.genome+'.'+self.chrom, self.start, self.end]))
+
+def parse_bed(bed_file):
+    beds = []
+    with open(bed_file) as bed:
+        for line in bed:
+            line = line.strip().split()
+            #genome,chrom = line[0].split('.')
+            #beds.append(BED_Entry(genome,chrom,int(line[1]),int(line[2])))
+            beds.append(BED_Entry('',line[0],int(line[1]),int(line[2])))
+    return beds
+
+class MAF_Entry:
+    def __init__(self, genome, chrom, start, length, strand, all_length, seq):
+        self.genome = genome
+        self.chrom = chrom
+        self.start = start
+        self.length = length
+        self.strand = strand
+        self.all_length = all_length
+        self.seq = seq
+        self.__init_global_coords()
+
+    def __init_global_coords(self):
+        if self.strand == '+':
+            self.global_start = self.start
+            self.global_end = self.start + self.length + 1
+        elif self.strand == '-':
+            self.global_end = self.all_length - self.start - 1
+            self.global_start = self.all_length - self.start - self.length
+
+    def print_out(self):
+        #print ' '.join(map(str,['s', self.genome + '.' + self.chrom, self.start,\
+        #                        self.length, self.strand, self.all_length, self.seq]))
+        print ' '.join(map(str,['s', self.genome + '.' + self.chrom, self.global_start,\
+                                self.global_end, self.strand, self.all_length, self.seq]))
 
 def parse_chromosomes(f):
     chroms = {}

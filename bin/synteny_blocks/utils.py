@@ -2,6 +2,30 @@
 
 import model
 
+def intersect(entry, bed_entries):
+    intersected_bed_entries = []
+    for b in bed_entries:
+        if (entry.get_specie() == b.genome or b.genome == '') and entry.get_chrom() == b.chrom:
+            if not (b.end < entry.start or entry.end < b.start) :
+                intersected_bed_entries.append(b)
+    return intersected_bed_entries
+
+def filter(blocks, bed):
+    bed_entries = model.parse_bed(bed)
+    for b in blocks:
+        intersected_bed_entries = []
+        for e in b.entries:
+            intersected_bed_entries += intersect(e, bed_entries)
+        if intersected_bed_entries:
+            #bed_entries = map(lambda x: bed_entries.remove(x), intersected_bed_entries)
+            for bed in intersected_bed_entries:
+                print '#',
+                bed.print_out()
+            b.print_out()
+            #if len(intersected_bed_entries) == 0:
+            #    return
+
+
 #traverses blocks and collects all the entries
 #related to the specie
 def get_specie_entries(blocks, specie):

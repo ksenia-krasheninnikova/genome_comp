@@ -1,50 +1,8 @@
 #!/usr/bin/env python
 
 import argparse
-
-class MAF_Entry:
-    def __init__(self, genome, chrom, start, length, strand, all_length, seq):
-        self.genome = genome
-        self.chrom = chrom
-        self.start = start
-        self.length = length
-        self.strand = strand
-        self.all_length = all_length
-        self.seq = seq
-        self.__init_global_coords()
-
-    def __init_global_coords(self):
-        if self.strand == '+':
-            self.global_start = self.start
-            self.global_end = self.start + self.length + 1
-        elif self.strand == '-':
-            self.global_end = self.all_length - self.start - 1
-            self.global_start = self.all_length - self.start - self.length
-
-    def print_out(self):
-        #print ' '.join(map(str,['s', self.genome + '.' + self.chrom, self.start,\
-        #                        self.length, self.strand, self.all_length, self.seq]))
-        print ' '.join(map(str,['s', self.genome + '.' + self.chrom, self.global_start,\
-                                self.global_end, self.strand, self.all_length, self.seq]))
-
-class BED_Entry:
-    def __init__(self, genome, chrom, start, end):
-        self.genome = genome
-        self.chrom = chrom
-        self.start = start
-        self.end = end
-
-    def print_out(self):
-        print ' '.join(map(str,[self.genome+'.'+self.chrom, self.start, self.end]))
-
-def parse_bed(bed_file):
-    beds = []
-    with open(bed_file) as bed:
-        for line in bed:
-            line = line.strip().split()
-            genome,chrom = line[0].split('.')
-            beds.append(BED_Entry(genome,chrom,int(line[1]),int(line[2])))
-    return beds
+from synteny_blocks.model import MAF_Entry
+from synteny_blocks.model import parse_bed
 
 def intersect(maf_entries, bed_entries):
     intersected_bed_entries = []
@@ -54,8 +12,6 @@ def intersect(maf_entries, bed_entries):
                 if not (b.end < m.global_start or m.global_end < b.start) :
                     intersected_bed_entries.append(b)
     return intersected_bed_entries
-
-
 
 def process(bed_file, maf_file):
     regions = parse_bed(bed_file)
