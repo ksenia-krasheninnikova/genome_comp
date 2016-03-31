@@ -9,12 +9,14 @@ def intersect(maf_entries, bed_entries):
     for m in maf_entries:
         for b in bed_entries:
             if m.genome == b.genome and m.chrom == b.chrom:
+                #print m.genome, m.chrom
                 if not (b.end < m.global_start or m.global_end < b.start) :
                     intersected_bed_entries.append(b)
     return intersected_bed_entries
 
 def process(bed_file, maf_file):
     regions = parse_bed(bed_file)
+
     with open(maf_file) as maf:
         maf_entries = []
         for line in maf:

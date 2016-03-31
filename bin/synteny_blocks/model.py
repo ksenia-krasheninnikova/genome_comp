@@ -78,9 +78,12 @@ def parse_bed(bed_file):
     with open(bed_file) as bed:
         for line in bed:
             line = line.strip().split()
+            delim = line[0].find('.')
+            genome = line[0][:delim]
+            chrom = line[0][delim+1:]
             #genome,chrom = line[0].split('.')
-            #beds.append(BED_Entry(genome,chrom,int(line[1]),int(line[2])))
-            beds.append(BED_Entry('',line[0],int(line[1]),int(line[2])))
+            beds.append(BED_Entry(genome,chrom,int(line[1]),int(line[2])))
+            #beds.append(BED_Entry('',line[0],int(line[1]),int(line[2])))
     return beds
 
 class MAF_Entry:
