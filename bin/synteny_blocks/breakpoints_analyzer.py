@@ -44,7 +44,7 @@ if __name__ == '__main__':
     blocks, count_chrs = model.parse_blocks(args.file, True)
 
     if args.filter:
-        f_blocks = utils.filter(blocks, args.filter)
+        f_blocks = utils.filter_bed(blocks, args.filter)
     elif args.classify_breakpoints:
         if not args.ref_genome:
             raise Exception('reference genome is needed for breakpoints classification')
