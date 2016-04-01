@@ -10,7 +10,7 @@ def intersect(entry, bed_entries):
                 intersected_bed_entries.append(b)
     return intersected_bed_entries
 
-def filter(blocks, bed):
+def filter_bed(blocks, bed):
     bed_entries = model.parse_bed(bed)
     for b in blocks:
         intersected_bed_entries = []

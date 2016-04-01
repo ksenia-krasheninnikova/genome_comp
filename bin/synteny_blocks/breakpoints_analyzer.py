@@ -54,7 +54,7 @@ if __name__ == '__main__':
             k[1].print_out()
             print breakpoints[k]
         exit()
-        if args.report_duplications:
+    elif args.report_duplications:
             for sp in args.species:
                 entries = utils.get_specie_entries(blocks, sp)
                 entries = utils.thread_specie_genome(entries)
@@ -71,7 +71,7 @@ if __name__ == '__main__':
                     if count_dup:
                         print 'overall duplications', count_dup
 
-        if args.report_translocations or args.report_transpositions or args.report_reversals\
+    elif args.report_translocations or args.report_transpositions or args.report_reversals\
              or args.report_duplications:
             if len(args.species) != 2:
                 raise Exception("Can evaluate rearrangements only between two species")

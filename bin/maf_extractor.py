@@ -36,6 +36,7 @@ def process(bed_file, maf_file):
                         print
                     maf_entries = []
             else:
+                whole_line = line
                 line = line.split()
                 line = line[1:]
                 genome = line[0].split('.')[0]
