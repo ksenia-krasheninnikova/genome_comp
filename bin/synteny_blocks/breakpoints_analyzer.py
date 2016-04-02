@@ -121,25 +121,19 @@ if __name__ == '__main__':
                     if count_trp:
                         print 'overall transpositions', count_trp
                 if args.report_translocations:
-                    count_trl = 0
                     trl = rearrangements_type.check_translocations(c)
-                    all_translocated_entries = map(lambda x: x[1], trl)
-                    all_translocated_entries = sum(all_translocated_entries, [])
                     for e in trl:
                         this_prev = e[0]
                         this_trl = e[1]
-                        if not this_prev in all_translocated_entries:
-                            count_trl += 1
+                        #if not this_prev in all_translocated_entries:
+                        #    count_trl += 1
                         print 'whole chromosome:'
                         for x in c:
                             x.print_out()
                         print 'translocation:'
                         for x in e[1]:
                             x.print_out()
-                    if count_trl:
-                        #count_trl == len(e[0])
-                        #for explanation s. docs to check_translocations()
-                        print 'overall translocations', count_trl
+                    print 'overall breakpoints associated with translocations:', len(trl)-1
                 if args.report_reversals:
                     count_rev = 0
                     rev = rearrangements_type.check_reversals(c)

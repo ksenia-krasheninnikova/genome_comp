@@ -102,16 +102,12 @@ but if the whole 'chromosome' is '-' than nothing is reversed
 '''
 def check_reversals(c):
     c_rev = filter(lambda x: x.strand == '-', c)
-    reversals = []
-    if len(c_rev) < len(c):
-        reversals = c_rev
-    if reversals:
-        rev_prev = get_previous_entries(reversals,c)
-        return zip(rev_prev,reversals)
-    else:
+    if len(c_rev) == len(c) :
         return []
-
-
+    if c_rev:
+        rev_prev = get_previous_entries(c_rev,c)
+        return zip(rev_prev,c_rev)
+    return []
 '''
 If block appears in genome several times then it's a duplication
 returns species entries that belong to duplicated blocks
