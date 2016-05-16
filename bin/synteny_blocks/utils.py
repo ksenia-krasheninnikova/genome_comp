@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import model
+import re
 
 def intersect(entry, bed_entries):
     intersected_bed_entries = []
@@ -99,7 +100,7 @@ def filter_unsplitted_chromosomes(blocks, count_chrs, sps):
     return upd_blocks
 
 def output_for_circos(blocks, species, prefixes, old_prefixes, output):
-    old_prefix='|'.join(args.old_prefixes)
+    old_prefix='|'.join(old_prefixes)
     with open(output,'w') as f:
         for b in blocks:
             e = b.entries
