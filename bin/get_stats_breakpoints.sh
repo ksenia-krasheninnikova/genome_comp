@@ -28,7 +28,7 @@ for e in $(ls -d $FOLDER/[0-9]*); do
     TMP=$p"/tmp"
     for kind in $KINDS; do
         ./synteny_blocks/breakpoints_analyzer.py $p/"blocks_coords.txt" --report_$kind --species $SP1 $SP2 > $p/$kind"_"$SP1"_"$SP2".txt";
-        u=$(cat $p/$kind"_"$SP1"_"$SP2".txt" | grep 'overall' | awk '{sum += '$'3} END {print sum}');
+        u=$(cat $p/$kind"_"$SP1"_"$SP2".txt" | grep overall | awk '{sum += $NF} END {print sum}');
         un=$(cat $p/$kind"_"$SP1"_"$SP2".txt" | grep unresolved | cut -f2 -d' ');
         $(echo -e $kind'\t'$(basename $p)'\t'$u'\t'$un >> $FOLDER/breakpoints_$SP1"_"$SP2.stats);
     done

@@ -133,10 +133,14 @@ if __name__ == '__main__':
                         print 'translocation:'
                         for x in e[1]:
                             x.print_out()
-                    print 'overall breakpoints associated with translocations:', len(trl)-1
+                    if trl:
+                        print 'overall translocations:', len(trl)
                 if args.report_reversals:
                     count_rev = 0
                     rev = rearrangements_type.check_reversals(c)
+                    print 'whole chromosome'
+                    for x in c:
+                        x.print_out()
                     for e in rev:
                         this_prev = e[0]
                         this_rev = e[1]
