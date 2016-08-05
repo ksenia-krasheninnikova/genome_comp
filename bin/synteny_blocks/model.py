@@ -70,6 +70,9 @@ class BED_Entry:
         self.start = start
         self.end = end
 
+    def to_string(self):
+        return  '_'.join(map(str,[self.genome+'.'+self.chrom, self.start, self.end]))
+
     def print_out(self):
         print ' '.join(map(str,[self.genome+'.'+self.chrom, self.start, self.end]))
 
