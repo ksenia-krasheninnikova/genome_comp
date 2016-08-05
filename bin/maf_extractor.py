@@ -41,7 +41,7 @@ def process(bed_file, maf_file):
                 genome = line[0].split('.')[0]
                 chrom = '.'.join(line[0].split('.')[1:])
                 maf_entries.append(MAF_Entry(genome, chrom, int(line[1]), int(line[2]),\
-                                             line[3], int(line[4]), line[4]))
+                                             line[3], int(line[4]), line[5]))
 
 
 
