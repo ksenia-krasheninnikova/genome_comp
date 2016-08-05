@@ -93,8 +93,13 @@ def filter_unsplitted_chromosomes(blocks, count_chrs, sps):
                     upd_entries.append(e)
                     upd_species.add(specie)
         #also count duplications?
+        #if so than only blocks when both chromosomes are split counted
         if len(upd_entries) >= len(sps) and len(upd_species) == len(sps):
+
         #if len(upd_entries) == 1:
+        
+        #if so than counted also those blocks that partly split but in some
+        #speices it can be the whole scaffold
         #if upd_entries:
             upd_blocks.append(model.Block(b.id, upd_entries))
     return upd_blocks
