@@ -30,10 +30,7 @@ if __name__ == '__main__':
     parser.add_argument('--report_reversals', action='store_true', help='report reversals in specie2 related to specie1')
     parser.add_argument('--report_duplications', action='store_true', help='search for duplications in each of --species')
     parser.add_argument('--count_breakpoints', action='store_true', help='print number of breakpoints in each of --species')
-    parser.add_argument('--circos_output', help='output the --species for circos plot')
     parser.add_argument('--species', nargs='+', help='species to check')
-    parser.add_argument('--prefixes', nargs='+', help='prefixes for circos naming in species')
-    parser.add_argument('--old_prefixes', nargs='+', help='prefixes to rename')
     parser.add_argument('--classify_breakpoints', action='store_true', help='find out which species contain breakpoint')
     parser.add_argument('--ref_genome')
     parser.add_argument('--print_out_genomes', help='prints out genomes of --species in terms of blocks')
@@ -165,10 +162,4 @@ if __name__ == '__main__':
             entries = utils.get_specie_entries(blocks, s)
             genome = utils.thread_specie_genome(entries)
             print sum(map(lambda x: len(x)-1, genome))
-    elif args.circos_output:
-        blocks = utils.filter_unsplitted_chromosomes(blocks, count_chrs, args.species)
-        if len(args.species) != 2:
-            raise Exception("Can only draw circos plot for two species")
-        if len(args.prefixes) != 2:
-            raise Exception("Specify two species prefixes with --prefixes")
-        utils.output_for_circos(blocks, args.species, args.prefixes, args.old_prefixes, args.circos_output)
+

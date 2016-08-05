@@ -1,0 +1,7 @@
+# .Ntab-TN90_AYMY-SS3734 15927 16078
+# .Ntab-K326_AWOJ-SS3977 19080 19231
+2199
+seq_id: TN90.Ntab-TN90_AYMY-SS3734 block_id: 2199 strand: + start: 7122 end: 23451 length: 16329
+seq_id: K326.Ntab-K326_AWOJ-SS3977 block_id: 2199 strand: + start: 10125 end: 26604 length: 16479
+seq_id: TN90.Ntab-TN90_AYMY-SS9571 block_id: 2199 strand: - start: 261724 end: 280182 length: 18458
+seq_id: K326.Ntab-K326_AWOJ-SS10370 block_id: 2199 strand: - start: 248093 end: 266469 length: 18376
