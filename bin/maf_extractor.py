@@ -16,7 +16,6 @@ def intersect(maf_entries, bed_entries):
 
 def process(bed_file, maf_file):
     regions = parse_bed(bed_file)
-
     with open(maf_file) as maf:
         maf_entries = []
         for line in maf:
