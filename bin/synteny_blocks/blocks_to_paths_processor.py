@@ -131,7 +131,6 @@ class BlocksToPathsProcessor:
                 else:
                     print 'Alternative solutions!'
                     print len(path)
-                    '''
                     i = 0
                     for p in path:
                         i += 1
@@ -140,7 +139,6 @@ class BlocksToPathsProcessor:
                             x[0].print_out()
                             x[1].print_out()
                             print '----'
-                        '''
                     print 'returning empty chromosome'
                     return []
             thread = [path[0][0][0]]
