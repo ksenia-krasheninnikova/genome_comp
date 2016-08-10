@@ -114,6 +114,11 @@ class MAF_Entry:
         print ' '.join(map(str,['s', self.genome + '.' + self.chrom, self.global_start,\
                                 self.global_end, self.strand, self.all_length, self.seq]))
 
+    #this prints canonical maf entry
+    def print_out_local_coords(self):
+        print ' '.join(map(str,['s', self.genome + '.' + self.chrom, self.start,\
+                                self.length, self.strand, self.all_length, self.seq]))
+
 def parse_chromosomes(f):
     chroms = {}
     with open(f) as blocks_file:
