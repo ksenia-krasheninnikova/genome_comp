@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-
+import os
 import argparse
 
 import model
@@ -9,7 +9,7 @@ from blocks_to_paths_processor import BlocksToPathsProcessor
 import rearrangements_type
 import breakpoints_classifier
 
-def print_out_genome_thread(species, entries):
+def print_out_genome_thread(entries):
     #with open(file_name,'w') as f:
         i = 0
         for c in entries:
@@ -17,8 +17,8 @@ def print_out_genome_thread(species, entries):
             #f.write(str(i)+'\n')
             print i
             for e in c:
-                # f.write('seq_id: ' + str(e.seq_id) + ' block_id: ' + str(e.block_id) + ' strand: '\
-                # + str(e.strand) + ' start: ' + str(e.start) + ' end: ' + str(e.end) + '\n')
+                 #f.write('seq_id: ' + str(e.seq_id) + ' block_id: ' + str(e.block_id) + ' strand: '\
+                 #+ str(e.strand) + ' start: ' + str(e.start) + ' end: ' + str(e.end) + '\n')
                 print 'seq_id: ' + str(e.seq_id) + ' block_id: ' + str(e.block_id) + ' strand: '\
                 + str(e.strand) + ' start: ' + str(e.start) + ' end: ' + str(e.end)
     
@@ -50,7 +50,6 @@ if __name__ == '__main__':
             k[0].print_out()
             k[1].print_out()
             print breakpoints[k]
-        exit()
     elif args.report_duplications:
             for sp in args.species:
                 entries = utils.get_specie_entries(blocks, sp)
@@ -78,10 +77,11 @@ if __name__ == '__main__':
             #sort entries by chromosomes for specie1
             specie1 = utils.thread_specie_genome(entries)
             #Tfor testing purposes
-            #Ttest_path = '/hive/groups/recon/projs/felidae_comp/bin'
+            #Ttest_path = '/Users/admin/projects/felidae_comp/analysis/synteny/solenodon/1000/'
             #Tprint_out_genome_thread(args.species[0],specie1,os.path.join(test_path,'tmp1'))
             entries = utils.get_specie_entries(blocks, args.species[1])
-            #Tprint_out_genome_thread(args.species[1],thread_specie_genome(entries),os.path.join(test_path,'tmp2'))
+            #Tprint_out_genome_thread(args.species[1],utils.thread_specie_genome(entries),os.path.join(test_path,'tmp2'))
+            #Texit()
             specie2 = utils.thread_specie_genome(entries)
             specie2_grouped = []
             #group entries in specie2 according to order of blocks on chromosomes
@@ -154,7 +154,7 @@ if __name__ == '__main__':
         for sp in args.species:
             entries = utils.get_specie_entries(blocks, sp)
             specie_genome = utils.thread_specie_genome(entries)
-            print_out_genome_thread(args.species[0],sp)
+            print_out_genome_thread(sp)
 
     elif args.count_breakpoints:
         blocks = utils.filter_unsplitted_chromosomes(blocks, count_chrs, args.species)
