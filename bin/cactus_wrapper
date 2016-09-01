@@ -1,0 +1,21 @@
+#!/hive/groups/recon/local/bin/python
+
+import os
+import sys
+import argparse
+import cactus_runner
+from utils import *
+
+
+def run_cactus(PATH_TO_WORKING_DIR) :
+    print 'starting wrapper for cactus', sys.argv[0], '...'
+    config = os.path.join(PATH_TO_WORKING_DIR, 'cactus.config')
+    check_existence_or_raise(config)
+    hal = os.path.join(PATH_TO_WORKING_DIR,'cactus.hal')
+    cactus_runner.run(config, PATH_TO_WORKING_DIR, hal)
+
+if __name__ == '__main__' :
+    parser = argparse.ArgumentParser()
+    parser.add_argument('working_dir')
+    args = parser.parse_args()
+    run_cactus(args.working_dir)
