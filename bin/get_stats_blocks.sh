@@ -18,7 +18,7 @@ for e in $(ls -d $FOLDER/[0-9]*); do
 
     genomes=$(halStats --genomes $HAL);
     for g in $genomes; do
-        TMP_GENOME=tmp.bed;
+        TMP_GENOME=$FOLDER/tmp.bed;
         $(halStats --bedSequences $g $HAL > $TMP_GENOME);
         genome_size=$(awk '{sum += $3 - $2} END {print sum}' $TMP_GENOME);
         if [[ $g != Anc* ]]; then
