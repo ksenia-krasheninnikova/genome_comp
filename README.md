@@ -1,2 +1,2 @@
-# felidae_comp
-Comparative analysis of multiple felid genomes
+# genome_comp
+Comparative analysis of multiple genomes
