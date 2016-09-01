@@ -76,7 +76,7 @@ class BED_Entry:
     def print_out(self):
         print ' '.join(map(str,[self.genome+'.'+self.chrom, self.start, self.end]))
 
-def parse_bed(bed_file):
+def parse_bed(bed_file, margin=0):
     beds = []
     with open(bed_file) as bed:
         for line in bed:
@@ -85,7 +85,7 @@ def parse_bed(bed_file):
             genome = line[0][:delim]
             chrom = line[0][delim+1:]
             #genome,chrom = line[0].split('.')
-            beds.append(BED_Entry(genome,chrom,int(line[1]),int(line[2])))
+            beds.append(BED_Entry(genome,chrom,int(line[1])-margin,int(line[2])+margin))
             #beds.append(BED_Entry('',line[0],int(line[1]),int(line[2])))
     return beds
 
@@ -103,9 +103,11 @@ class MAF_Entry:
     def __init_global_coords(self):
         if self.strand == '+':
             self.global_start = self.start
-            self.global_end = self.start + self.length + 1
+            #self.global_end = self.start + self.length + 1
+            self.global_end = self.start + self.length
         elif self.strand == '-':
-            self.global_end = self.all_length - self.start - 1
+            #self.global_end = self.all_length - self.start - 1
+            self.global_end = self.all_length - self.start 
             self.global_start = self.all_length - self.start - self.length
 
     def print_out(self):
@@ -118,6 +120,31 @@ class MAF_Entry:
     def print_out_local_coords(self):
         print ' '.join(map(str,['s', self.genome + '.' + self.chrom, self.start,\
                                 self.length, self.strand, self.all_length, self.seq]))
+
+def check_maf_for_no_overlaps(maf_entries):
+    #i don't keep any storage for processed entries
+    #in order not to load the whole maf into memory
+    for e1 in maf_entries:
+        for e2 in maf_entries:
+            if e1 == e2 or e1.genome != e2.genome or e1.chrom != e2.chrom:
+                continue
+            if e1.start < e2.start and e1.start + e1.length > e2.start:
+                print 'e2 overlaps e1:'
+                e1.print_out_local_coords()
+                e2.print_out_local_coords()
+            if e1.global_start < e2.global_start and e1.global_end > e2.global_start: 
+                print 'e2 overlaps e1 global:'
+                e1.print_out()
+                e2.print_out()
+            if e2.start < e1.start and e2.start + e2.length > e1.start:
+                print 'e1 overlaps e2:'
+                e1.print_out_local_coords()
+                e2.print_out_local_coords()
+            if e2.global_start < e1.global_start and e2.global_end > e1.global_start: 
+                print 'e1 overlaps e2 global:'
+                e1.print_out()
+                e2.print_out()
+
 
 def parse_chromosomes(f):
     chroms = {}

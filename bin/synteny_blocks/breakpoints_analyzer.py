@@ -9,6 +9,18 @@ from blocks_to_paths_processor import BlocksToPathsProcessor
 import rearrangements_type
 import breakpoints_classifier
 
+def print_genome_for_grimm(genome, entries):
+    i = 0
+    print '>'+genome
+    for c in entries:
+        i += 1
+        print '#', i
+        for e in c:
+            if e.strand == '-':
+                print '-' + str(e.block_id),
+            else:
+                print str(e.block_id),
+            print '$'
 def print_out_genome_thread(entries):
     #with open(file_name,'w') as f:
         i = 0
@@ -19,8 +31,8 @@ def print_out_genome_thread(entries):
             for e in c:
                  #f.write('seq_id: ' + str(e.seq_id) + ' block_id: ' + str(e.block_id) + ' strand: '\
                  #+ str(e.strand) + ' start: ' + str(e.start) + ' end: ' + str(e.end) + '\n')
-                print 'seq_id: ' + str(e.seq_id) + ' block_id: ' + str(e.block_id) + ' strand: '\
-                + str(e.strand) + ' start: ' + str(e.start) + ' end: ' + str(e.end)
+                 print 'seq_id: ' + str(e.seq_id) + ' block_id: ' + str(e.block_id) + ' strand: '\
+                 + str(e.strand) + ' start: ' + str(e.start) + ' end: ' + str(e.end)
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -33,7 +45,8 @@ if __name__ == '__main__':
     parser.add_argument('--species', nargs='+', help='species to check')
     parser.add_argument('--classify_breakpoints', action='store_true', help='find out which species contain breakpoint')
     parser.add_argument('--ref_genome')
-    parser.add_argument('--print_out_genomes', help='prints out genomes of --species in terms of blocks')
+    parser.add_argument('--print_out_genomes', action='store_true', help='prints out genomes of --species in terms of blocks')
+    parser.add_argument('--print_genome_for_grimm', action='store_true', help='prints out genomes in input format for grimm')
     parser.add_argument('--filter', help='filter blocks for regions mentioned in bed file')
 
     args = parser.parse_args()
@@ -150,11 +163,19 @@ if __name__ == '__main__':
                     if count_rev:
                         print 'overall reversals', count_rev
     elif args.print_out_genomes :
-        blocks = utils.filter_unsplitted_chromosomes(blocks, count_chrs, args.species)
+        #blocks = utils.filter_unsplitted_chromosomes(blocks, count_chrs, args.species)
         for sp in args.species:
             entries = utils.get_specie_entries(blocks, sp)
             specie_genome = utils.thread_specie_genome(entries)
-            print_out_genome_thread(sp)
+            print_out_genome_thread(specie_genome)
+
+    elif args.print_genome_for_grimm :
+        blocks = utils.filter_absent_species(blocks, args.species)
+        for sp in args.species:
+            entries = utils.get_specie_entries(blocks, sp)
+            specie_genome = utils.thread_specie_genome(entries)
+            print_genome_for_grimm(sp,specie_genome)
+
 
     elif args.count_breakpoints:
         blocks = utils.filter_unsplitted_chromosomes(blocks, count_chrs, args.species)

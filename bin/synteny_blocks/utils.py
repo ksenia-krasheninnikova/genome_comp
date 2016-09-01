@@ -89,42 +89,65 @@ def filter_unsplitted_chromosomes(blocks, count_chrs, sps):
             #specie = chroms[int(seq_id)].get_specie()
             specie = e.get_specie()
             if specie in sps:
+                #if count_chrs[e.seq_id] > 1:
                 if count_chrs[e.seq_id] > 1:
                     upd_entries.append(e)
                     upd_species.add(specie)
         #also count duplications?
         #if so than only blocks when both chromosomes are split counted
         if len(upd_entries) >= len(sps) and len(upd_species) == len(sps):
-
         #if len(upd_entries) == 1:
         
-        #if so than counted also those blocks that partly split but in some
-        #speices it can be the whole scaffold
+        #if so then counted also those blocks that partly split but in some
+        #species it can be the whole scaffold
         #if upd_entries:
             upd_blocks.append(model.Block(b.id, upd_entries))
     return upd_blocks
+
+def filter_absent_species(blocks, sps):
+    upd_blocks = []
+    for b in blocks:
+        entries = b.entries
+        upd_species = []
+        for e in entries:
+            specie = e.get_specie()
+            if specie in sps:
+                upd_species.append(specie)
+        if len(upd_species) == len(sps):
+            upd_blocks.append(b)
+    return upd_blocks
+
 
 def output_for_circos(blocks, species, prefixes, old_prefixes, output):
     old_prefix='|'.join(old_prefixes)
     with open(output,'w') as f:
         for b in blocks:
             e = b.entries
-            e1 = filter(lambda x: x.seq_id.split('.')[0] == species[0], e)[0]
-            e2 = filter(lambda x: x.seq_id.split('.')[0] == species[1], e)[0]
-            id = [s.strip() for s in re.split(old_prefix, e1.seq_id.split('.')[1])][1]
-            name1 = prefixes[0]+id
-            id = [s.strip() for s in re.split(old_prefix, e2.seq_id.split('.')[1])][1]
-            name2 = prefixes[1]+id
-            if e1.strand == '+':
-                start1 = e1.start
-                end1 = e1.end
-            else:
-                end1 = e1.start
-                start1 = e1.end
-            if e2.strand == '+':
-                start2 = e2.start
-                end2 = e2.end
-            else:
-                end2 = e2.start
-                start2 = e2.end
-            f.write(name1 + ' ' + str(start1) + ' ' + str(end1) + ' ' + name2 + ' ' + str(start2) + ' ' + str(end2)+ '\n')
+            e1 = filter(lambda x: x.seq_id.split('.')[0] == species[0], e)
+            if e1:
+                e1 = e1[0]
+                id = [s.strip() for s in re.split(old_prefix, e1.seq_id.split('.')[1])][1]
+                name1 = prefixes[0]+id
+                if e1.strand == '+':
+                    start1 = e1.start
+                    end1 = e1.end
+                else:
+                    end1 = e1.start
+                    start1 = e1.end
+                f.write(name1 + ' ' + str(start1) + ' ' + str(end1)) 
+            e2 = filter(lambda x: x.seq_id.split('.')[0] == species[1], e)
+            if e2:
+                e2 = e2[0]
+                id = [s.strip() for s in re.split(old_prefix, e2.seq_id.split('.')[1])][1]
+                name2 = prefixes[1]+id
+                if e2.strand == '+':
+                    start2 = e2.start
+                    end2 = e2.end
+                else:
+                    end2 = e2.start
+                    start2 = e2.end
+                if e1:
+                    f.write(' ')
+                f.write(name2 + ' ' + str(start2) + ' ' + str(end2)+ '\n')
+            elif e1:
+                f.write('\n')
