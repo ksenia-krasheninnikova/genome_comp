@@ -1,0 +1,39 @@
+#!/hive/groups/recon/local/bin/python
+
+import subprocess
+import tempfile
+from ConfigParser import SafeConfigParser
+import argparse
+import os
+import utils
+
+BIN_DIR = os.path.normpath(os.path.dirname(sys.argv[0]))
+
+parser = SafeConfigParser()
+parser.read('../etc/chaining.config')
+DATA_ROOT = parser.get('environment','DATA_ROOT')
+VERSION = parser.get('environment','VERSION')
+NAME = parser.get('environment','NAME')
+WORKING_DIR = os.path.join(DATA_ROOT, 'comparative', NAME, VERSION)
+
+def run(hal, query, target, query_genome, target_genome, chromosome):
+    output_net = os.path.join(WORKING_DIR,'net',chromosome+'.net')
+
+    psl_tmp = tempfile.NamedTemporaryFile(mode='w+t')
+    hal_lift = [os.path.join(BIN_DIR,'hal_lift_one_chromosome'), hal, query, target, chromosome, psl_tmp.name]
+    subprocess.check_call(hal_lift)
+    net = [os.path.join(BIN_DIR,'chain_one_chromosome'), psl_tmp.name, query_genome, target_genome, output_net]
+    subprocess.check_call(net)
+    psl_tmp.close()
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('hal')
+    parser.add_argument('query',help='species name')
+    parser.add_argument('target',help='species name')
+    parser.add_argument('query_genome',help='2bit file')
+    parser.add_argument('target_genome',help='2bit file')
+    parser.add_argument('chromosome',help='query chromosome')
+    args = parser.parse_args()
+    run(args.hal,args.query,args.target,args.query_genome,args.target_genome,args.chromosome)
