@@ -2,19 +2,19 @@
 
 import argparse
 
-from synteny_blocks import ragout_synteny_blocks
+from synteny_blocks import model
 
 
 def get_location(seq_id, chroms):
     for c in chroms:
-        if seq_id == c.seq_id:
-            return c.description
+        if seq_id == chroms[c].description:
+            return chroms[c].description
     raise Exception('No such entry id!')
 
 def get_specie_region(seq_id, chroms):
     for c in chroms:
-        if seq_id == c.seq_id:
-            return c.description.split('.')
+        if seq_id == chroms[c].description:
+            return chroms[c].description.split('.')
     raise Exception('No such entry id!')
 
 def print_specie_bed(blocks, chroms, ref_specie):
@@ -37,8 +37,8 @@ if  __name__ == '__main__':
     parser.add_argument('file', help='blocks_coords.txt')
     parser.add_argument('specie')
     args = parser.parse_args()
-    chroms = ragout_synteny_blocks.parse_chromosomes(args.file)
-    blocks = ragout_synteny_blocks.parse_blocks(args.file)
+    chroms = model.parse_chromosomes(args.file)
+    blocks = model.parse_blocks(args.file)
     if args.specie is not None:
         print_specie_bed(blocks, chroms, args.specie)
     else:
