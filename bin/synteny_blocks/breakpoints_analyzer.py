@@ -44,7 +44,6 @@ if __name__ == '__main__':
     parser.add_argument('--count_breakpoints', action='store_true', help='print number of breakpoints in each of --species')
     parser.add_argument('--species', nargs='+', help='species to check')
     parser.add_argument('--classify_breakpoints', action='store_true', help='find out which species contain breakpoint')
-    parser.add_argument('--ref_genome')
     parser.add_argument('--print_out_genomes', action='store_true', help='prints out genomes of --species in terms of blocks')
     parser.add_argument('--print_genome_for_grimm', action='store_true', help='prints out genomes in input format for grimm')
     parser.add_argument('--filter', help='filter blocks for regions mentioned in bed file')
