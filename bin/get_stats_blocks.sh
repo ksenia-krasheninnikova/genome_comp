@@ -22,7 +22,7 @@ for e in $(ls -d $FOLDER/[0-9]*); do
         $(halStats --bedSequences $g $HAL > $TMP_GENOME);
         genome_size=$(awk '{sum += $3 - $2} END {print sum}' $TMP_GENOME);
         if [[ $g != Anc* ]]; then
-            $(./ragout_blocks_to_bed.py $p/"blocks_coords.txt" --specie $g > $p/"blocks_coords_$g.bed");
+            #$(./ragout_blocks_to_bed.py $p/"blocks_coords.txt" --specie $g > $p/"blocks_coords_$g.bed");
             #counting number of blocks
             n=$(cat $p/"blocks_coords_$g.bed" | wc -l);
             TMP_INTERSECT=$p/"tmp.int"
@@ -31,12 +31,11 @@ for e in $(ls -d $FOLDER/[0-9]*); do
             if [ -z "$cov" ]; then
                 cov=0;
             fi
-            echo $cov $genome_size 
             #counting genome coverage
             cov=$(echo print $cov/$genome_size. | python);
             echo $cov
             #count median size in file
-            median=$(sort -n $p/blocks_coords_$g.bed | awk ' { a[i++]=$3 - $2; } END { print a[int(i/2)]; }')
+            median=$(cat $p/blocks_coords_$g.bed | awk '{print $3-$2}' | sort -n | awk ' { a[i++]=$1; } END { print a[int(i/2)]; }')
             #count number of breakpoints
             br_count=$(./synteny_blocks/breakpoints_analyzer.py $p/"blocks_coords.txt" --count_breakpoints --species $g)
             #print out results
