@@ -76,7 +76,7 @@ translocation is a change of the genomic position to another chromosome
 choose the one interpretation that corresponds to less translocations (by length)
 generally the translocations can be counted without information about previous entries
 because they are already grouped into lists of unbroken segments of blocks.
-however we report translocations in the sema manner as reversals and trnaspositions
+however we report translocations in the same manner as reversals and transpositions
 for uniformity and for being able to report the breakpoints if needed
 '''
 def check_translocations(c):
@@ -87,6 +87,13 @@ def check_translocations(c):
     ls = zip(lengths, c_seq_ids)
     ls_sorted = sorted(ls, key=lambda x: x[0])
     translocations = map(lambda x: x[1], ls_sorted[:-1])
+    '''
+    for e in ls_sorted:
+        print e[0]
+        for x in e[1]:
+            x.print_out()
+        print
+    '''
     trans_prev = []
     for tl in translocations:
         trans_prev.append(get_previous_entry_for_translocation(tl, c))

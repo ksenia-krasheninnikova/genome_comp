@@ -32,9 +32,13 @@ def filter_bed(blocks, bed):
 def get_specie_entries(blocks, specie):
     specie_entries = []
     for b in blocks:
+        #i = 0
         for e in b.entries:
             if e.get_specie() == specie:
+                #i += 1
                 specie_entries.append(e)
+        #if i > 1:
+            #print i, specie
     return specie_entries
 
 def thread_specie_genome(specie_entries):

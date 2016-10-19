@@ -56,14 +56,14 @@ if __name__ == '__main__':
     if args.filter:
         f_blocks = utils.filter_bed(blocks, args.filter)
     elif args.classify_breakpoints:
-        if not args.ref_genome:
-            raise Exception('reference genome is needed for breakpoints classification')
-        breakpoints = breakpoints_classifier.run(blocks, args.ref_genome)
-        for k in breakpoints.keys():
-            k[0].print_out()
-            k[1].print_out()
-            print breakpoints[k]
+        breakpoints_classifier.run(blocks)
+        #for k in breakpoints.keys():
+        #    k[0].print_out()
+        #    k[1].print_out()
+        #    print breakpoints[k]
     elif args.report_duplications:
+    #TODO: this should be updated because its a rude estimation
+    #some blocks should be counted as as one duplication
             for sp in args.species:
                 entries = utils.get_specie_entries(blocks, sp)
                 entries = utils.thread_specie_genome(entries)
@@ -137,9 +137,9 @@ if __name__ == '__main__':
                         this_trl = e[1]
                         #if not this_prev in all_translocated_entries:
                         #    count_trl += 1
-                        print 'whole chromosome:'
-                        for x in c:
-                            x.print_out()
+                        #print 'whole chromosome:'
+                        #for x in c:
+                        #    x.print_out()
                         print 'translocation:'
                         for x in e[1]:
                             x.print_out()
@@ -148,9 +148,9 @@ if __name__ == '__main__':
                 if args.report_reversals:
                     count_rev = 0
                     rev = rearrangements_type.check_reversals(c)
-                    print 'whole chromosome'
-                    for x in c:
-                        x.print_out()
+                    #print 'whole chromosome'
+                    #for x in c:
+                    #    x.print_out()
                     for e in rev:
                         this_prev = e[0]
                         this_rev = e[1]
