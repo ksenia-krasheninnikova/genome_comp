@@ -32,15 +32,6 @@ def get_previous_entries(list_entries, c):
             rearrangement_prev.append(c[i])
     return rearrangement_prev
 
-'''
-each translocation is presented as a list which differs from
-the presentation of other rearrangements
-'''
-def get_previous_entry_for_translocation(transloc, c):
-    r_id = c.index(transloc[0])
-    if r_id == 0:
-        return None
-    return c[r_id - 1]
 
 '''
 transposition is a change of the genomic location on the same chromosome
@@ -87,6 +78,7 @@ def check_translocations(c):
     ls = zip(lengths, c_seq_ids)
     ls_sorted = sorted(ls, key=lambda x: x[0])
     translocations = map(lambda x: x[1], ls_sorted[:-1])
+    main_chrom = ls_sorted[-1][1][0].get_chrom()
     '''
     for e in ls_sorted:
         print e[0]
@@ -94,10 +86,7 @@ def check_translocations(c):
             x.print_out()
         print
     '''
-    trans_prev = []
-    for tl in translocations:
-        trans_prev.append(get_previous_entry_for_translocation(tl, c))
-    return zip(trans_prev,translocations)
+    return main_chrom, translocations
 
 '''
 reversal is the change of strand

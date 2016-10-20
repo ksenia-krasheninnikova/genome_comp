@@ -43,7 +43,10 @@ if __name__ == '__main__':
     parser.add_argument('--report_duplications', action='store_true', help='search for duplications in each of --species')
     parser.add_argument('--count_breakpoints', action='store_true', help='print number of breakpoints in each of --species')
     parser.add_argument('--species', nargs='+', help='species to check')
+    
     parser.add_argument('--classify_breakpoints', action='store_true', help='find out which species contain breakpoint')
+    parser.add_argument('--print_table', action='store_true', help='not reporting themself but the list of species that contain it')
+
     parser.add_argument('--print_out_genomes', action='store_true', help='prints out genomes of --species in terms of blocks')
     parser.add_argument('--print_genome_for_grimm', action='store_true', help='prints out genomes in input format for grimm')
     parser.add_argument('--filter', help='filter blocks for regions mentioned in bed file')
@@ -55,7 +58,10 @@ if __name__ == '__main__':
     if args.filter:
         f_blocks = utils.filter_bed(blocks, args.filter)
     elif args.classify_breakpoints:
-        breakpoints_classifier.run(blocks)
+        if args.print_table:
+            breakpoints_classifier.run(blocks, True)
+        else:
+            breakpoints_classifier.run(blocks, False)
         #for k in breakpoints.keys():
         #    k[0].print_out()
         #    k[1].print_out()
@@ -125,22 +131,20 @@ if __name__ == '__main__':
                         #it occured in neighbouring blocks
                         if not this_prev in map(lambda x: x[1], trp):
                             count_trp += 1
-                        print 'transposition:',
+                        print 'transposition:'
                         this_trp.print_out()
                     if count_trp:
                         print 'overall transpositions', count_trp
                 if args.report_translocations:
-                    trl = rearrangements_type.check_translocations(c)
+                    main_chrom, trl = rearrangements_type.check_translocations(c)
                     for e in trl:
-                        this_prev = e[0]
-                        this_trl = e[1]
                         #if not this_prev in all_translocated_entries:
                         #    count_trl += 1
                         #print 'whole chromosome:'
                         #for x in c:
                         #    x.print_out()
-                        print 'translocation:'
-                        for x in e[1]:
+                        print 'translocation: from chromosome', main_chrom
+                        for x in e:
                             x.print_out()
                     if trl:
                         print 'overall translocations:', len(trl)
@@ -174,7 +178,6 @@ if __name__ == '__main__':
             entries = utils.get_specie_entries(blocks, sp)
             specie_genome = utils.thread_specie_genome(entries)
             print_genome_for_grimm(sp,specie_genome)
-
 
     elif args.count_breakpoints:
         blocks = utils.filter_unsplitted_chromosomes(blocks, count_chrs, args.species)

@@ -30,7 +30,7 @@ def create_indices(species, threaded_genomes):
     return ind
 
 def run(blocks, print_table=False):
-    species = get_set_entries(blocks)
+    species = sorted(list(get_set_entries(blocks)))
     threaded_genomes = {}
     for sp in species:
             entries = utils.get_specie_entries(blocks, sp)
@@ -40,13 +40,17 @@ def run(blocks, print_table=False):
     dupls_num = 0
     blocks_num = 0
     entries_num = 0
+    if print_table:
+        header = '\t'.join(['breakpoint block']+species)
+        print header
     for b in blocks_ids:
         blocks_num += 1
         block_inds = filter(lambda x: x[0] == b, index)
         neighbours = []    
         species_status = {}
-        for ind in block_inds:
-            print index[ind]
+        if not print_table:
+            for ind in block_inds:
+                print index[ind]
         #just linearize two-dimensional data
         #[(prev1, next1), (prev2, next2)] -> [prev1, next1, prev2, next2]
         for ind in block_inds:
@@ -75,6 +79,7 @@ def run(blocks, print_table=False):
                     print
                 for ind in block_inds:
                     if not ind[1] in species_status.keys():
+                        #could not resolve breakpoint
                         species_status[ind[1]] = 'NA'
                 continue
             first_common = c[0][0]
@@ -85,11 +90,12 @@ def run(blocks, print_table=False):
                 #beware of dupl!
                 prev,next = index[ind][0]
                 if prev in nodef and next in nodef:
+                    #the whole block is a full scaffold in the specie
                     species_status[ind[1]] = 'END'
                 #    print 'possible breakpoint', ind[1], prev, '-', ind[0], '-', next
                     continue
                 if prev in allowable and next in allowable:
-                    species_status[ind[1]] = 'NOBR'
+                    species_status[ind[1]] = '-'
                     continue
                 if not prev in allowable:
                     species_status[ind[1]] = 'BR'
@@ -101,15 +107,23 @@ def run(blocks, print_table=False):
                         print 'breakpoint', ind[1], ind[0], '-', next
         if not print_table:    
             print
+        else:
+            l = str(b)
+            if not species_status.keys():
+                #in case breakpoint is caused by assembly incompleteness
+                continue
+            for e in species:
+                if not e in species_status.keys():
+                    l += '\t'+'not in block'
+                else:
+                    l+='\t'+species_status[e]
+            print l
     if not print_table:
         print 'STAT Also:'
         print 'STAT number of blocks:', blocks_num
         print 'STAT number of entries:', entries_num
         print 'STAT number of dupls (among entries):', dupls_num
         print 'STAT rate of duplications:', float(dupls_num)/entries_num
-    else:
-        names = sorted(map(lambda x: x[1], block_inds))
-        header = '\t'.join(['breakpoint block']+names)
-
+        
 
     
