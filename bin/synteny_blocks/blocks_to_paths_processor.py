@@ -13,22 +13,20 @@ class BlocksToPathsProcessor:
         while i < len(entries) - 1:
             v = entries[i]
             v_next = entries[i+1]
-            appended = False
             for e in v:
+                appended = False
                 for e_next in v_next:
                     if e.seq_id == e_next.seq_id:
                         edges.append((e,e_next,i))
-                        '''
-                        print i
-                        e.print_out()
-                        e_next.print_out()
-                        '''
+                        #print i
+                        #e.print_out()
+                        #e_next.print_out()
                         appended = True
-            #in case we didn't found the next block on the same chromosome
-            #add all the following blocks (on all the chromosomes)
-            if not appended:
-                for e_next in v_next:
-                    edges.append((e,e_next,i))
+                #in case we didn't found the next block on the same chromosome
+                #add all the following blocks (on all the chromosomes)
+                if not appended:
+                    for e_next in v_next:
+                        edges.append((e,e_next,i))
             i += 1
         ##in case we didn't filter out unsplitted chromosomes
         ##we add a loop
@@ -60,6 +58,20 @@ class BlocksToPathsProcessor:
         #  c
         #here a,b,c,d - chromosomes, and alternative paths are a b d and a c d
         #also, b and c can belong to different locations on the same chromosome
+        '''
+        for x in new_paths:
+            for y in x:
+                if y[0].block_id==993 or y[1].block_id==993:
+                    print 'new paths:'
+                    for a in new_paths:
+                        for b in a:
+                            b[0].print_out()
+                            b[1].print_out()
+                            print
+                        print
+
+                    return new_paths
+        '''
         return new_paths
 
     '''

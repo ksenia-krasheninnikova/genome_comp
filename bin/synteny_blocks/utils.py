@@ -121,6 +121,33 @@ def filter_absent_species(blocks, sps):
             upd_blocks.append(b)
     return upd_blocks
 
+#must be fixed: in case of duplications in a genome
+#there can be ambiguities in prev entries
+def find_prev_block_in_specie(entry,specie):
+    for c in specie:
+        find = filter(lambda x: x.block_id == entry.block_id, c)
+        if len(find) > 1:
+            raise Exeption('duplicated entry!')
+        if find:
+            l = c.index(find[0])
+            if l == 0:
+                return None
+            return c[l-1] 
+    raise Exeption('No such block! ' + entry.block_id)
+
+#must be fixed: in case of duplications in a genome
+#there can be ambiguities in next entries
+def find_next_block_in_specie(entry,specie):
+    for c in specie:
+        find = filter(lambda x: x.block_id == entry.block_id, c)
+        if len(find) > 1:
+            raise Exeption('duplicated entry!') 
+        if find:
+            l = c.index(find[0])
+            if l == len(c)-1:
+                return None
+            return c[l+1] 
+    raise Exeption('No such block! ' + entry.block_id)
 
 def output_for_circos(blocks, species, prefixes, old_prefixes, output):
     old_prefix='|'.join(old_prefixes)

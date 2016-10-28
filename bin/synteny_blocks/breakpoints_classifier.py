@@ -86,6 +86,7 @@ def run(blocks, print_table=False):
             second_common = c[1][0]
             nodef = set([-1,-2])
             allowable = set([-1,-2,first_common,second_common])
+            br = False
             for ind in block_inds:
                 #beware of dupl!
                 prev,next = index[ind][0]
@@ -101,13 +102,17 @@ def run(blocks, print_table=False):
                     species_status[ind[1]] = 'BR'
                     if not print_table:
                         print 'breakpoint', ind[1], prev, '-', ind[0]
+                        br = True
                 if not next in allowable:
                     species_status[ind[1]] = 'BR'
                     if not print_table:
                         print 'breakpoint', ind[1], ind[0], '-', next
+                        br = True
+            #if br:
+            #    print
         if not print_table:    
             print
-        else:
+        if print_table:
             l = str(b)
             if not species_status.keys():
                 #in case breakpoint is caused by assembly incompleteness

@@ -32,6 +32,18 @@ def get_previous_entries(list_entries, c):
             rearrangement_prev.append(c[i])
     return rearrangement_prev
 
+def get_next_entries(list_entries, c):
+    rearrangement_ids = []
+    for e in list_entries:
+        rearrangement_ids.append(c.index(e))
+    rearrangement_ids = map(lambda x: x+1, rearrangement_ids)
+    rearrangement_prev = []
+    for i in rearrangement_ids:
+        if i == len(c):
+            rearrangement_prev.append(None)
+        else:
+            rearrangement_prev.append(c[i])
+    return rearrangement_prev
 
 '''
 transposition is a change of the genomic location on the same chromosome
@@ -52,6 +64,12 @@ def check_transpositions(c):
         c_seq_id_sorted = sorted(c_seq_id, key = lambda x: x.start)
         if c_seq_id == c_seq_id_sorted or c_seq_id == c_seq_id_sorted[::-1]:
             continue
+        print 'fc:'
+        for x in c_seq_id:
+            x.print_out() 
+        print 'fc sorted according pt:'
+        for x in c_seq_id_sorted:
+            x.print_out()
         transpositions_up = check_order(c_seq_id, c_seq_id_sorted)
         transpositions_down = check_order(c_seq_id, c_seq_id_sorted[::-1])
         if len(transpositions_up) <= len(transpositions_down):
@@ -59,8 +77,23 @@ def check_transpositions(c):
         else:
             transpositions += transpositions_down
     #find indices of entries that are previous to the transposed entries
+    #transpositions = sorted(transpositions, key = lambda x: x.start, reverse=True)
     tps_prev = get_previous_entries(transpositions, c)
-    return zip(tps_prev, transpositions)
+    tps_next = get_next_entries(transpositions, c)
+    '''
+    for p,t,n in zip(tps_prev, transpositions, tps_next):
+        if p:
+            p.print_out()
+        else:
+            print None
+        t.print_out()
+        if n:
+            n.print_out()
+        else:
+            print None
+        print
+    '''
+    return zip(tps_prev, transpositions, tps_next)
 
 '''
 translocation is a change of the genomic position to another chromosome

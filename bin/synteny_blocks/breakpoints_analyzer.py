@@ -111,30 +111,46 @@ if __name__ == '__main__':
                     specie2_grouped[-1].append(c)
                     if not c:
                         print y.block_id
-            specie2 = []
+            specie2_rear = []
             cnt_empty = 0
             for e in specie2_grouped:
                 p = BlocksToPathsProcessor.search_paths(e)
                 if not p:
                     cnt_empty += 1
-                specie2.append(p)
+                specie2_rear.append(p)
             print 'unresolved:', cnt_empty
-            specie1,specie2 = utils.normalize(specie1, specie2)
-            for c in specie2:
+            specie1,specie2_rear = utils.normalize(specie1, specie2_rear)
+            for c in specie2_rear:
                 if args.report_transpositions:
-                    count_trp = 0
                     trp = rearrangements_type.check_transpositions(c)
+                    #it works but fix  utils.find_prev_block_in_specie and
+                    # utils.find_next_block_in_specie in case there are duplications
+                    this_trp = []
+                    to_start = -1
+                    to_end = -2
                     for e in trp:
                         this_prev = e[0]
-                        this_trp = e[1]
-                        #count transposition only once if
-                        #it occured in neighbouring blocks
+                        this_trp.append(e[1])
+                        this_next = e[2]
+                        #start is the block before the trasposition
                         if not this_prev in map(lambda x: x[1], trp):
-                            count_trp += 1
-                        print 'transposition:'
-                        this_trp.print_out()
-                    if count_trp:
-                        print 'overall transpositions', count_trp
+                            to_start = this_prev
+                        if not this_next in map(lambda x: x[1], trp):
+                            to_end = this_next
+                        if to_start != -1 and to_end != -2:
+                            from_start = utils.find_prev_block_in_specie(this_trp[0],specie2)
+                            from_end = utils.find_next_block_in_specie(this_trp[-1], specie2)
+                            l = str(from_start.block_id)+'\t' if from_start else 'None\t'
+                            l += str(from_end.block_id)+'\t' if from_end else 'None\t'
+                            l += str(to_start.block_id)+'\t' if to_start else 'None\t'
+                            l += str(to_end.block_id) if to_end else 'None'
+                            for t in this_trp:
+                                l += '\t'+str(t.block_id)
+                            l += '\ttransposition'
+                            print l
+                            to_start = -1
+                            to_end = -2
+                            this_trp = []
                 if args.report_translocations:
                     main_chrom, trl = rearrangements_type.check_translocations(c)
                     for e in trl:
