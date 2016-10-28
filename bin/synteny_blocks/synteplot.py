@@ -3,7 +3,7 @@
 import os
 import sys
 import matplotlib
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.patches import Circle, Wedge, Polygon, Rectangle
 from matplotlib.collections import PatchCollection
@@ -30,24 +30,37 @@ def parse_genome(genome_path):
 
 #genomes is the list of chrs (chrs is a list of chromosomes of a genome)
 def karyoplot(genome, lengths, metadata={}, part=1):
-    pp=PdfPages(os.path.join('test'))
-    fig, ax = plt.subplots()
+    fig = plt.figure(1,figsize=(8, 6))
+    ax = fig.add_subplot(111, aspect='equal')
     color = 'blue'
-    breath = 100
+    breath = 0.05
+#    block_length_param = 0.0000001
+    block_length_param = 5e-08
+    x_dist = 0.05
+    y_dist = 0.05
+    x_start = x_dist
     for c,l in zip(genome,lengths):
-        y_end = 0
-        x_start = 0
+        y_start = y_dist
         for e in c:
-            y_start = y_end
-            y_size = e.length / l * 100
-            y_end = y_start + y_size
-            r = Rectangle((x_start, y_start), breath, y_size, color = color)
-            x_start += 2*breath
+            #y_size = float(e.length) / l * chrom_length_param 
+            y_size = float(e.length) * block_length_param 
+            r = Rectangle((x_start, y_start), breath, y_size, facecolor = color, alpha=None)
+            y_start += y_size
+            print r
             ax.add_patch(r)
+        center_x = x_start + breath/2.0
+        radius = breath/2.0
+        theta1 = 0.0
+        theta2 = 180.0
+        print center_x, y_start, y_dist
+        w1 = Wedge((center_x, y_start), radius, theta1, theta2, width=0.00001, facecolor='white', edgecolor='black')
+        w2 = Wedge((center_x, y_dist), radius, theta2, theta1, width=0.00001, facecolor='white', edgecolor='black')
+        ax.add_patch(w1)
+        ax.add_patch(w2)
+        x_start += breath + x_dist
         break
-    plt.axis('off')
-    plt.savefig(pp, format='pdf')
-    pp.close()
+
+    fig.savefig('test.png', dpi=90)
 
 '''
         #Plot semicircles at the beginning and end of the chromosomes
