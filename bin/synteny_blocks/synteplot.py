@@ -6,7 +6,7 @@ import matplotlib
 import argparse
 matplotlib.use('Agg')
 from matplotlib.backends.backend_pdf import PdfPages
-from matplotlib.patches import Circle, Wedge, Polygon, Rectangle
+from matplotlib.patches import Circle, Wedge, Polygon, Rectangle, FancyArrowPatch
 from matplotlib.collections import PatchCollection
 import matplotlib.pyplot as plt
 from model import Entry
@@ -41,7 +41,8 @@ def check_if_homolog_to_reference_chrom(c, ref_blocks):
             c_hom.append((e,True))
         else:
             c_hom.append((e,False))
-    return float(homologous_blocks_len) / sum(map(lambda x: x.length, c)) >= 0.5, c_hom
+    #return float(homologous_blocks_len) / sum(map(lambda x: x.length, c)) >= 0.5, c_hom
+    return homologous_blocks_len > 0, c_hom
 
 class ReferenceBlockDrawing:
     def __init__(self,e, color, y_size, y_start):
@@ -69,15 +70,24 @@ def karyoplot(ref_genome, genomes,names, folder):
         cache_names = cache.keys()
         color_i = 0
         y_start = y_dist
+        #link means belonging to the same scaffold
+        if_draw_link = False
+        link_height = 0.05
         for e in c:
             if e.length < length_threshold:
+                #if_draw_link = False
                 continue
             if color_i == len(cache_names):
                 #i = 0
                 raise Exception('No more colors!')
+            if if_draw_link:
+                link_loc  = x_start + breath/2.0
+                link = FancyArrowPatch((link_loc,y_start),(link_loc,y_start+link_height),arrowstyle='-')
+                ax.add_patch(link)
+            y_start+=link_height
+            if_draw_link = True
             y_size = float(e.length) * block_length_param 
             r = Rectangle((x_start, y_start), breath, y_size, facecolor = cache[cache_names[color_i]])
-            print r
             #remember the colors in reference
             block_id2drawing[e.block_id] = ReferenceBlockDrawing(e, cache[cache_names[color_i]], y_size, y_start)
             y_start += y_size
@@ -89,9 +99,10 @@ def karyoplot(ref_genome, genomes,names, folder):
         theta1 = 0.0
         theta2 = 180.0
         w1 = Wedge((center_x, y_start), radius, theta1, theta2, width=0.00001, facecolor='white', edgecolor='black')
-        w2 = Wedge((center_x, y_dist), radius, theta2, theta1, width=0.00001, facecolor='white', edgecolor='black')
+        w2 = Wedge((center_x, y_dist+link_height), radius, theta2, theta1, width=0.00001, facecolor='white', edgecolor='black')
         ax.add_patch(w1)
         ax.add_patch(w2)
+        last_y = y_start + 0.3
         
         
         for g,name in zip(genomes,names):
@@ -101,13 +112,35 @@ def karyoplot(ref_genome, genomes,names, folder):
             for c in g:
                 if_hom,c_hom = check_if_homolog_to_reference_chrom(c, block_id2drawing.keys())
                 if if_hom:
-                    for e,status in c_hom:
+                    #for e,status in c_hom:
+                    for i in range(len(c_hom)):
+                        e = c_hom[i][0]
+                        status = c_hom[i][1]
                         if status: #True if homologous
                             ref_drawing = block_id2drawing[e.block_id]
-                            r = Rectangle((x_start, y_start), breath, ref_drawing.y_size, facecolor = ref_drawing.color)
+                            #r = Rectangle((x_start, y_start), breath, ref_drawing.y_size, facecolor = ref_drawing.color)
+                            r = Rectangle((x_start, ref_drawing.y_start), breath, ref_drawing.y_size, facecolor = ref_drawing.color)
+                            cur_y = ref_drawing.y_start + ref_drawing.y_size 
+                            if cur_y > y_start:
+                                y_start = cur_y
+                            #if i > 0 and c_hom[i-1][1]:
+                            prev_hom = filter(lambda x: x[1] == True, c_hom[:i])
+                            if i > 0 and prev_hom:
+                                prev_hom = prev_hom[-1]
+                                link_loc  = x_start + breath/2.0
+                                #prev_block_drawing = block_id2drawing[c_hom[i-1][0].block_id] 
+                                prev_block_drawing = block_id2drawing[prev_hom[0].block_id] 
+                                if prev_block_drawing.y_start < ref_drawing.y_start:
+                                    #link down
+                                    link = FancyArrowPatch((link_loc,ref_drawing.y_start),(link_loc,ref_drawing.y_start-link_height),arrowstyle='-')
+                                    ax.add_patch(link)
+                                else: #link up
+                                    link = FancyArrowPatch((link_loc,prev_block_drawing.y_start),(link_loc,prev_block_drawing.y_start-link_height),arrowstyle='-')
+                                    ax.add_patch(link)
                             rectangles.append(r)
-                            y_start += ref_drawing.y_size
                             ax.add_patch(r)
+                        '''
+                        #this was for drawing non-homologous parts of scaffolds
                         else:
                             if e.length < length_threshold:
                                 continue
@@ -117,10 +150,11 @@ def karyoplot(ref_genome, genomes,names, folder):
                             rectangles.append(r)
                             y_start += y_size
                             ax.add_patch(r)
+                       '''
                 
-                    y_start += radius
+                    #y_start += radius
             name = ' '.join(name.split('_'))
-            ax.text(x_start+breath/2.0, y_start, name, va='bottom', rotation='vertical')
+            ax.text(x_start+breath/2.0, y_start+radius, name, va='bottom', rotation='vertical')
 
         x_start += breath + x_dist                     
         ax.set_axis_off()
