@@ -51,31 +51,17 @@ class ReferenceBlockDrawing:
         self.y_size = y_size
         self.y_start = y_start
 
-#genomes is the list of chrs (chrs is a list of chromosomes of a genome)
-def karyoplot(ref_genome, genomes,names, folder):
-    default_color = 'black'
-    breath = 0.05
-    block_length_param = 5e-08
-    x_dist = 0.05
-    y_dist = 0.05
-    plt.hold(False) 
-    for c in ref_genome:
-        chr_name = c[0].seq_id.split('.')[1]
-        print 'processing',chr_name
-        fig = plt.figure(1,figsize=(5, 7))
-        ax = fig.add_subplot(111, aspect='equal')
+def draw_main(ax, c, chr_name, x_start,  breath = 0.05, block_length_param = 5e-08, x_dist = 0.05, y_dist = 0.05, link_height = 0.05) :
         if chr_name == 'chrC1':
             ax.set_ylim([0,3])
         else:
             ax.set_ylim([0,2])
-        x_start = x_dist
         block_id2drawing = {}
         cache_names = cache.keys()
         color_i = 0
         y_start = y_dist
         #link means belonging to the same scaffold
         if_draw_link = False
-        link_height = 0.05
         for e in c:
             if e.length < length_threshold:
                 #if_draw_link = False
@@ -106,15 +92,14 @@ def karyoplot(ref_genome, genomes,names, folder):
         ax.add_patch(w1)
         ax.add_patch(w2)
         last_y = y_start + 0.3
-        
-        unhomologous_len = 0 
-        homologous_len = 0 
-        unhomologous_num = 0
-        homologous_num = 0
-        for g,name in zip(genomes,names):
+        return ax, block_id2drawing
+
+def draw_homologous(ax, block_id2drawing, g, x_start, name,unhomologous_len, homologous_len, unhomologous_num, homologous_num,\
+                    breath = 0.05, x_dist = 0.05, y_dist = 0.05, link_height = 0.05): 
             x_start += breath + x_dist
             y_start = y_dist
             rectangles = []
+            radius = breath/2.0
             for c in g:
                 if_hom,c_hom = check_if_homolog_to_reference_chrom(c, block_id2drawing.keys())
                 if if_hom:
@@ -147,26 +132,37 @@ def karyoplot(ref_genome, genomes,names, folder):
                                     ax.add_patch(link)
                             rectangles.append(r)
                             ax.add_patch(r)
-                        '''
-                        #this was for drawing non-homologous parts of scaffolds
-                        else:
-                            if e.length < length_threshold:
-                                continue
-                            #print 'else'
-                            y_size = float(e.length) * block_length_param 
-                            r = Rectangle((x_start, y_start), breath, y_size, facecolor = default_color)
-                            rectangles.append(r)
-                            y_start += y_size
-                            ax.add_patch(r)
-                       '''
                     else:
                         e = c_hom[i][0]
                         unhomologous_len = e.end - e.start
                         unhomologous_num += 1
-                    #y_start += radius
             name = ' '.join(name.split('_'))
             ax.text(x_start+breath/2.0, y_start+2*radius, name, va='bottom', rotation='vertical')
+            return ax, x_start, unhomologous_len, homologous_len, unhomologous_num, homologous_num
 
+
+#genomes is the list of chrs (chrs is a list of chromosomes of a genome)
+def karyoplot(ref_genome, genomes,names, folder):
+    default_color = 'black'
+    breath = 0.05
+    block_length_param = 5e-08
+    x_dist = 0.05
+    y_dist = 0.05
+    plt.hold(False) 
+    for c in ref_genome:
+        fig = plt.figure(1,figsize=(5, 7))
+        ax = fig.add_subplot(111, aspect='equal')
+        x_start = x_dist
+        chr_name = c[0].seq_id.split('.')[1]
+        print 'processing',chr_name
+        ax, block_id2drawing = draw_main(ax, c, chr_name, x_start) 
+        unhomologous_len = 0 
+        homologous_len = 0 
+        unhomologous_num = 0
+        homologous_num = 0
+        for g,name in zip(genomes,names):
+            ax, x_start, unhomologous_len, homologous_len, unhomologous_num, homologous_num = \
+                draw_homologous(ax, block_id2drawing, g, x_start, name, unhomologous_len, homologous_len, unhomologous_num, homologous_num)
         print 'length of homologous', homologous_len
         print 'number of homologous', homologous_num
         print 'length of unhomologous', unhomologous_len, float(unhomologous_len)/(homologous_len+0.01), 'of homologous'
