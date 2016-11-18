@@ -64,7 +64,10 @@ def karyoplot(ref_genome, genomes,names, folder):
         print 'processing',chr_name
         fig = plt.figure(1,figsize=(5, 7))
         ax = fig.add_subplot(111, aspect='equal')
-        ax.set_ylim([0,1.5])
+        if chr_name == 'chrC1':
+            ax.set_ylim([0,3])
+        else:
+            ax.set_ylim([0,2])
         x_start = x_dist
         block_id2drawing = {}
         cache_names = cache.keys()
@@ -104,7 +107,10 @@ def karyoplot(ref_genome, genomes,names, folder):
         ax.add_patch(w2)
         last_y = y_start + 0.3
         
-        
+        unhomologous_len = 0 
+        homologous_len = 0 
+        unhomologous_num = 0
+        homologous_num = 0
         for g,name in zip(genomes,names):
             x_start += breath + x_dist
             y_start = y_dist
@@ -115,6 +121,8 @@ def karyoplot(ref_genome, genomes,names, folder):
                     #for e,status in c_hom:
                     for i in range(len(c_hom)):
                         e = c_hom[i][0]
+                        homologous_len += e.end - e.start
+                        homologous_num += 1
                         status = c_hom[i][1]
                         if status: #True if homologous
                             ref_drawing = block_id2drawing[e.block_id]
@@ -151,11 +159,18 @@ def karyoplot(ref_genome, genomes,names, folder):
                             y_start += y_size
                             ax.add_patch(r)
                        '''
-                
+                    else:
+                        e = c_hom[i][0]
+                        unhomologous_len = e.end - e.start
+                        unhomologous_num += 1
                     #y_start += radius
             name = ' '.join(name.split('_'))
-            ax.text(x_start+breath/2.0, y_start+radius, name, va='bottom', rotation='vertical')
+            ax.text(x_start+breath/2.0, y_start+2*radius, name, va='bottom', rotation='vertical')
 
+        print 'length of homologous', homologous_len
+        print 'number of homologous', homologous_num
+        print 'length of unhomologous', unhomologous_len, float(unhomologous_len)/(homologous_len+0.01), 'of homologous'
+        print 'number of unhomologous', unhomologous_num
         x_start += breath + x_dist                     
         ax.set_axis_off()
         ax.set_title(chr_name)
@@ -163,38 +178,9 @@ def karyoplot(ref_genome, genomes,names, folder):
         fig.clf()
         plt.cla()
         plt.close()
-'''
-        #Plot semicircles at the beginning and end of the chromosomes
-        center_x = x_start + (x_end-x_start)/2.0
-        radius = (x_end-x_start)/2.0
-        theta1 = 0.0
-        theta2 = 180.0
-        w1 = Wedge((center_x, y_start), radius, theta1, theta2, width=0.00001, facecolor='white', edgecolor='black')
-        w2 = Wedge((center_x, y_end), radius, theta2, theta1, width=0.00001, facecolor='white', edgecolor='black')
-        ax.add_patch(w1)
-        ax.add_patch(w2)
-        ax.plot([x_start, x_start], [y_start, y_end], ls='-', color='black')
-        ax.plot([x_end, x_end], [y_start, y_end], ls='-', color='black')
-
-        #Plot metadata
-        if chromosome in metadata:
-            for md in metadata[chromosome]:
-                ax.plot([x_end + (DIM*0.015)], [y_start + (y_end-y_start) * (md/chromosome_length)], '.', color='black')
-
-        ax.text(center_x, y_end - (DIM * 0.07), chromosome)
-'''
-
 
 
 if __name__ == '__main__':
-    #import urllib
-    #fn = 'karyotype_hg19.txt'
-    #url = 'http://pastebin.com/raw.php?i=6nBX6sdE'
-    #if not os.path.exists(fn):
-    #    print 'Downloading %s to local file: %s' % (url, fn)
-    #    with open(fn, 'w') as k_file:
-    #        f = urllib.urlopen(url)
-    #        k_file.write(f.read())
     parser = argparse.ArgumentParser()
     parser.add_argument('path',help='folder for the output')
     parser.add_argument('reference')
